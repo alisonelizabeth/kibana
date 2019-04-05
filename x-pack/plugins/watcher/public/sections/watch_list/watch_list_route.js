@@ -47,6 +47,12 @@ routes.when('/management/elasticsearch/watcher/watches/', {
       });
     }
   },
+  resolve: {
+    checkLicense: ($injector) => {
+      const licenseService = $injector.get('xpackWatcherLicenseService');
+      return licenseService.checkValidity();
+    },
+  },
   controllerAs: 'watchListRoute',
   k7Breadcrumbs: getWatchListBreadcrumbs,
 });

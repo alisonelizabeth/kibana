@@ -91,29 +91,26 @@ routes
                 return watchService.newWatch(watchType);
               })
               .catch(err => {
-                return licenseService.checkValidity().then(() => {
-                  if (err.status !== 403) {
-                    toastNotifications.addDanger(err.data.message);
-                  }
+                if (err.status !== 403) {
+                  toastNotifications.addDanger(err.data.message);
+                }
 
-                  kbnUrl.redirect('/management/elasticsearch/watcher/watches');
-                  return Promise.reject();
-                });
+                kbnUrl.redirect('/management/elasticsearch/watcher/watches');
+                return Promise.reject();
               });
           }
 
           return watchService.loadWatch(watchId).catch(err => {
-            return licenseService.checkValidity().then(() => {
-              if (err.status !== 403) {
-                toastNotifications.addDanger(err.data.message);
-              }
+            if (err.status !== 403) {
+              toastNotifications.addDanger(err.data.message);
+            }
 
-              kbnUrl.redirect('/management/elasticsearch/watcher/watches');
-              return Promise.reject();
-            });
+            kbnUrl.redirect('/management/elasticsearch/watcher/watches');
+            return Promise.reject();
           });
         },
         checkLicense: $injector => {
+          console.log('---CHECK LICENSE ---');
           const licenseService = $injector.get('xpackWatcherLicenseService');
           return licenseService.checkValidity();
         },
