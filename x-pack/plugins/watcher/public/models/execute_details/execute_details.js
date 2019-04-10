@@ -6,18 +6,54 @@
 
 import { TIME_UNITS } from '../../../common/constants';
 import moment from 'moment';
+import { i18n } from '@kbn/i18n';
+
+const DEFAULT_VALUES = {
+  TRIGGERED_TIME_VALUE: 0,
+  TRIGGERED_TIME_UNIT: TIME_UNITS.MILLISECOND,
+  SCHEDULED_TIME_VALUE: 0,
+  SCHEDULED_TIME_UNIT: TIME_UNITS.SECOND,
+  IGNORE_CONDITION: false,
+};
 
 export class ExecuteDetails {
   constructor(props = {}) {
-    this.triggeredTimeValue = props.triggeredTimeValue;
-    this.triggeredTimeUnit = props.triggeredTimeUnit;
-    this.scheduledTimeValue = props.scheduledTimeValue;
-    this.scheduledTimeUnit = props.scheduledTimeUnit;
-    this.scheduledTime = props.scheduledTime;
-    this.ignoreCondition = props.ignoreCondition;
+    this.triggeredTimeValue = props.triggeredTimeValue || DEFAULT_VALUES.TRIGGERED_TIME_VALUE;
+    this.triggeredTimeUnit = props.triggeredTimeUnit || DEFAULT_VALUES.TRIGGERED_TIME_UNIT;
+    this.scheduledTimeValue = props.scheduledTimeValue || DEFAULT_VALUES.SCHEDULED_TIME_VALUE;
+    this.scheduledTimeUnit = props.scheduledTimeUnit || DEFAULT_VALUES.SCHEDULED_TIME_UNIT;
+    this.ignoreCondition = props.ignoreCondition || DEFAULT_VALUES.IGNORE_CONDITION;
     this.alternativeInput = props.alternativeInput;
+    this.alternativeInputString = props.alternativeInputString || '';
     this.actionModes = props.actionModes;
     this.recordExecution = props.recordExecution;
+  }
+
+  validate() {
+    const errors = {
+      json: [],
+    };
+    if (this.alternativeInputString || this.alternativeInputString !== '') {
+      try {
+        const parsedJson = JSON.parse(this.alternativeInputString);
+        if (parsedJson && typeof parsedJson !== 'object') {
+          errors.json.push(i18n.translate(
+            'xpack.watcher.sections.watchEdit.simulate.form.alternativeInputFieldError',
+            {
+              defaultMessage: 'Invalid JSON',
+            }
+          ));
+        }
+      } catch (e) {
+        errors.json.push(i18n.translate(
+          'xpack.watcher.sections.watchEdit.simulate.form.alternativeInputFieldError',
+          {
+            defaultMessage: 'Invalid JSON',
+          }
+        ));
+      }
+    }
+    return errors;
   }
 
   formatTime(timeUnit, value) {
@@ -50,7 +86,7 @@ export class ExecuteDetails {
         scheduledTime,
       },
       ignoreCondition: this.ignoreCondition,
-      alternativeInput: this.alternativeInput,
+      alternativeInput: this.alternativeInputString !== '' ? JSON.parse(this.alternativeInputString) : undefined,
       actionModes: this.actionModes,
       recordExecution: this.recordExecution,
     };

@@ -22,6 +22,7 @@ export interface ExecutedWatchDetails {
   triggeredTimeUnit: string;
   ignoreCondition: boolean;
   alternativeInput: any;
+  alternativeInputString: string;
   actionModes: {
     [key: string]: string;
   };
