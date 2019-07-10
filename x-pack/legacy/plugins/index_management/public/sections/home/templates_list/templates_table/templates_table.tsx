@@ -4,12 +4,21 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState, Fragment, useMemo } from 'react';
+import React, { useState, Fragment } from 'react';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
-import { EuiInMemoryTable, EuiIcon, EuiButton, EuiToolTip, EuiButtonIcon } from '@elastic/eui';
+import {
+  EuiInMemoryTable,
+  EuiIcon,
+  EuiButton,
+  EuiToolTip,
+  EuiButtonIcon,
+  EuiLink,
+} from '@elastic/eui';
 import { Template } from '../../../../../common/types';
+import { BASE_PATH, UIM_TEMPLATE_SHOW_DETAILS_CLICK } from '../../../../../common/constants';
 import { DeleteTemplatesModal } from '../../../../components';
+import { trackUiMetric } from '../../../../services/track_ui_metric';
 
 interface Props {
   templates: Template[];
@@ -29,15 +38,6 @@ const Checkmark = ({ tableCellData }: { tableCellData: object }) => {
 export const TemplatesTable: React.FunctionComponent<Props> = ({ templates, reload }) => {
   const [selection, setSelection] = useState<Template[]>([]);
   const [templatesToDelete, setTemplatesToDelete] = useState<Array<Template['name']>>([]);
-  const [deletedTemplates, setDeletedTemplates] = useState<Array<Template['name']>>([]);
-
-  const availableTemplates = useMemo(
-    () =>
-      templates
-        ? templates.filter((template: Template) => !deletedTemplates.includes(template.name))
-        : undefined,
-    [templates, deletedTemplates]
-  );
 
   const columns = [
     {
@@ -47,6 +47,17 @@ export const TemplatesTable: React.FunctionComponent<Props> = ({ templates, relo
       }),
       truncateText: true,
       sortable: true,
+      render: (name: Template['name']) => {
+        return (
+          <EuiLink
+            href={`#${BASE_PATH}templates/${name}`}
+            data-test-subj="templateDetailsLink"
+            onClick={trackUiMetric.bind(null, UIM_TEMPLATE_SHOW_DETAILS_CLICK)}
+          >
+            {name}
+          </EuiLink>
+        );
+      },
     },
     {
       field: 'indexPatterns',
@@ -234,14 +245,14 @@ export const TemplatesTable: React.FunctionComponent<Props> = ({ templates, relo
       <DeleteTemplatesModal
         callback={data => {
           if (data && data.hasDeletedTemplates) {
-            setDeletedTemplates([...deletedTemplates, ...templatesToDelete]);
+            reload();
           }
           setTemplatesToDelete([]);
         }}
         templatesToDelete={templatesToDelete}
       />
       <EuiInMemoryTable
-        items={availableTemplates}
+        items={templates}
         itemId="name"
         columns={columns}
         search={searchConfig}
