@@ -113,6 +113,16 @@ describe.skip('<PolicyAdd />', () => {
           find('deselectIndicesLink').simulate('click');
 
           expect(form.getErrorsMessages()).toEqual(['You must select at least one index.']);
+
+          // Navigation buttons should be disabled
+          expect(find('nextButton').props().disabled).toBe(true);
+          expect(find('backButton').props().disabled).toBe(true);
+
+          // All steps except current step (step 2) should be disabled
+          expect(find('policyStepOne').props()['aria-disabled']).toBe(true);
+          expect(find('policyStepTwo').props()['aria-disabled']).toBe(false);
+          expect(find('policyStepThree').props()['aria-disabled']).toBe(true);
+          expect(find('policyStepFour').props()['aria-disabled']).toBe(true);
         });
       });
 
@@ -140,6 +150,16 @@ describe.skip('<PolicyAdd />', () => {
           expect(form.getErrorsMessages()).toEqual([
             'Minimum count cannot be greater than maximum count.',
           ]);
+
+          // Navigation buttons should be disabled
+          expect(find('nextButton').props().disabled).toBe(true);
+          expect(find('backButton').props().disabled).toBe(true);
+
+          // All steps except current step (step 3) should be disabled
+          expect(find('policyStepOne').props()['aria-disabled']).toBe(true);
+          expect(find('policyStepTwo').props()['aria-disabled']).toBe(true);
+          expect(find('policyStepThree').props()['aria-disabled']).toBe(false);
+          expect(find('policyStepFour').props()['aria-disabled']).toBe(true);
         });
       });
     });

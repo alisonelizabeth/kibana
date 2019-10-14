@@ -129,6 +129,7 @@ export const PolicyForm: React.FunctionComponent<Props> = ({
         currentStep={currentStep}
         maxCompletedStep={maxCompletedStep}
         updateCurrentStep={updateCurrentStep}
+        isFormInvalid={!validation.isValid}
       />
       <EuiSpacer size="l" />
       <EuiForm>
@@ -159,6 +160,7 @@ export const PolicyForm: React.FunctionComponent<Props> = ({
                     iconType="arrowLeft"
                     onClick={() => onBack()}
                     disabled={!validation.isValid}
+                    data-test-subj="backButton"
                   >
                     <FormattedMessage
                       id="xpack.snapshotRestore.policyForm.backButtonLabel"
