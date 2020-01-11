@@ -28,8 +28,8 @@ export const FIELD_TYPES = {
   RADIO_GROUP: 'radioGroup',
   RANGE: 'range',
   SELECT: 'select',
-  MULTI_SELECT: 'multiSelect',
   SUPER_SELECT: 'superSelect',
+  MULTI_SELECT: 'multiSelect',
 };
 
 // Validation types

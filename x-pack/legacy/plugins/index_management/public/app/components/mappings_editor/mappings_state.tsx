@@ -15,7 +15,7 @@ import {
   Dispatch,
 } from './reducer';
 import { Field, FieldsEditor } from './types';
-import { normalize, deNormalize, canUseMappingsEditor } from './lib';
+import { normalize, deNormalize } from './lib';
 
 type Mappings = MappingsConfiguration & {
   properties: MappingsFields;
@@ -56,24 +56,20 @@ export const MappingsState = React.memo(({ children, onUpdate, defaultValue }: P
     defaultValue.fields,
   ]);
 
-  const { maxNestedDepth } = parsedFieldsDefaultValue;
-
-  const canUseDefaultEditor = canUseMappingsEditor(maxNestedDepth);
-
   const initialState: State = {
     isValid: undefined,
     configuration: {
       defaultValue: defaultValue.configuration,
       data: {
-        raw: {},
-        format: () => ({} as Mappings),
+        raw: defaultValue.configuration,
+        format: () => defaultValue.configuration,
       },
       validate: () => Promise.resolve(true),
     },
     fields: parsedFieldsDefaultValue,
     documentFields: {
       status: 'idle',
-      editor: canUseDefaultEditor ? 'default' : 'json',
+      editor: 'default',
     },
     fieldsJsonEditor: {
       format: () => ({}),
@@ -120,8 +116,10 @@ export const MappingsState = React.memo(({ children, onUpdate, defaultValue }: P
             ? nextState.fieldsJsonEditor.format()
             : deNormalize(nextState.fields);
 
+        const configurationData = nextState.configuration.data.format();
+
         return {
-          ...nextState.configuration.data.format(),
+          ...configurationData,
           properties: fields,
         };
       },

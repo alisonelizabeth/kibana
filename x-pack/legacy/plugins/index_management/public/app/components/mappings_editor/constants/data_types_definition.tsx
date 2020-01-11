@@ -122,15 +122,43 @@ export const TYPE_DEFINITION: { [key in DataType]: DataTypeDefinition } = {
     documentation: {
       main: '/date.html',
     },
+    description: () => (
+      <p>
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.dataType.dateLongDescription"
+          defaultMessage='Date fields accept strings with formatted dates ("2015/01/01 12:10:30"), long numbers representing milliseconds since the epoch, and integers representing seconds since the epoch. Multiple date formats are allowed. Dates with timezones are converted to UTC.'
+        />
+      </p>
+    ),
   },
   date_nanos: {
     label: i18n.translate('xpack.idxMgmt.mappingsEditor.dataType.dateNanosDescription', {
-      defaultMessage: 'Date nanos',
+      defaultMessage: 'Date nanoseconds',
     }),
     value: 'date_nanos',
     documentation: {
       main: '/date_nanos.html',
     },
+    description: () => (
+      <p>
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.dataType.dateNanosLongDescription"
+          defaultMessage="Date nanoseconds fields store dates in nanosecond resolution. Aggregations remain in millisecond resolution. To store dates in millisecond resolution, use the {date}."
+          values={{
+            date: (
+              <EuiLink href={documentationService.getTypeDocLink('date')} target="_blank">
+                {i18n.translate(
+                  'xpack.idxMgmt.mappingsEditor.dataType.dateNanosLongDescription.dateTypeLink',
+                  {
+                    defaultMessage: 'date data type',
+                  }
+                )}
+              </EuiLink>
+            ),
+          }}
+        />
+      </p>
+    ),
   },
   binary: {
     label: i18n.translate('xpack.idxMgmt.mappingsEditor.dataType.binaryDescription', {
@@ -271,36 +299,84 @@ export const TYPE_DEFINITION: { [key in DataType]: DataTypeDefinition } = {
       defaultMessage: 'Date range',
     }),
     value: 'date_range',
+    description: () => (
+      <p>
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.dataType.dateRangeLongDescription"
+          defaultMessage="Date range fields accept an unsigned 64-bit integer representing milliseconds since the system epoch."
+        />
+      </p>
+    ),
   },
   double_range: {
     label: i18n.translate('xpack.idxMgmt.mappingsEditor.dataType.doubleRangeDescription', {
       defaultMessage: 'Double range',
     }),
     value: 'double_range',
+    description: () => (
+      <p>
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.dataType.doubleRangeLongDescription"
+          defaultMessage="Double range fields accept a 64-bit double precision floating point number (IEEE 754 binary64)."
+        />
+      </p>
+    ),
   },
   float_range: {
     label: i18n.translate('xpack.idxMgmt.mappingsEditor.dataType.floatRangeDescription', {
       defaultMessage: 'Float range',
     }),
     value: 'float_range',
+    description: () => (
+      <p>
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.dataType.floatRangeLongDescription"
+          defaultMessage="Float range fields accept a 32-bit single precision floating point number (IEEE 754 binary32)."
+        />
+      </p>
+    ),
   },
   integer_range: {
     label: i18n.translate('xpack.idxMgmt.mappingsEditor.dataType.integerRangeDescription', {
       defaultMessage: 'Integer range',
     }),
     value: 'integer_range',
+    description: () => (
+      <p>
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.dataType.integerRangeLongDescription"
+          defaultMessage="Integer range fields accept a signed 32-bit integer."
+        />
+      </p>
+    ),
   },
   long_range: {
     label: i18n.translate('xpack.idxMgmt.mappingsEditor.dataType.longRangeDescription', {
       defaultMessage: 'Long range',
     }),
     value: 'long_range',
+    description: () => (
+      <p>
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.dataType.longRangeLongDescription"
+          defaultMessage="Long range fields accept a signed 64-bit integer."
+        />
+      </p>
+    ),
   },
   ip_range: {
     label: i18n.translate('xpack.idxMgmt.mappingsEditor.dataType.ipRangeDescription', {
       defaultMessage: 'IP range',
     }),
     value: 'ip_range',
+    description: () => (
+      <p>
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.dataType.ipRangeLongDescription"
+          defaultMessage="IP range fields accept an IPv4 or IPV6 address."
+        />
+      </p>
+    ),
   },
   geo_point: {
     label: i18n.translate('xpack.idxMgmt.mappingsEditor.dataType.geoPointDescription', {

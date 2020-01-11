@@ -24,6 +24,7 @@ import {
   MAX_DEPTH_DEFAULT_EDITOR,
   PARAMETERS_DEFINITION,
   TYPE_NOT_ALLOWED_MULTIFIELD,
+  TYPE_ONLY_ALLOWED_AT_ROOT_LEVEL,
 } from '../constants';
 
 import { State } from '../reducer';
@@ -103,7 +104,7 @@ const replaceAliasPathByAliasId = (
   Object.entries(byId).forEach(([id, field]) => {
     if (field.source.type === 'alias') {
       const aliasTargetField = Object.values(byId).find(
-        _field => _field.path === field.source.path
+        _field => _field.path.join('.') === field.source.path
       );
 
       if (aliasTargetField) {
@@ -222,7 +223,7 @@ export const normalize = (fieldsToNormalize: Fields): NormalizedFields => {
           parentId,
           nestedDepth,
           isMultiField,
-          path: paths.length ? `${paths.join('.')}.${propName}` : propName,
+          path: paths.length ? [...paths, propName] : [propName],
           source: rest,
           ...meta,
         };
@@ -259,7 +260,7 @@ const replaceAliasIdByAliasPath = (
   const updatedById = { ...byId };
 
   Object.entries(aliases).forEach(([targetId, aliasesIds]) => {
-    const path = updatedById[targetId] ? updatedById[targetId].path : '';
+    const path = updatedById[targetId] ? updatedById[targetId].path.join('.') : '';
 
     aliasesIds.forEach(id => {
       const aliasField = updatedById[id];
@@ -279,9 +280,9 @@ const replaceAliasIdByAliasPath = (
 };
 
 export const deNormalize = ({ rootLevelFields, byId, aliases }: NormalizedFields): Fields => {
-  const deNormalizePaths = (ids: string[], to: Fields = {}) => {
-    const serializedFieldsById = replaceAliasIdByAliasPath(aliases, byId);
+  const serializedFieldsById = replaceAliasIdByAliasPath(aliases, byId);
 
+  const deNormalizePaths = (ids: string[], to: Fields = {}) => {
     ids.forEach(id => {
       const { source, childFields, childFieldsName } = serializedFieldsById[id];
       const { name, ...normalizedField } = source;
@@ -308,13 +309,13 @@ export const deNormalize = ({ rootLevelFields, byId, aliases }: NormalizedFields
 export const updateFieldsPathAfterFieldNameChange = (
   field: NormalizedField,
   byId: NormalizedFields['byId']
-): { updatedFieldPath: string; updatedById: NormalizedFields['byId'] } => {
+): { updatedFieldPath: string[]; updatedById: NormalizedFields['byId'] } => {
   const updatedById = { ...byId };
-  const paths = field.parentId ? byId[field.parentId].path.split('.') : [];
+  const paths = field.parentId ? byId[field.parentId].path : [];
 
   const updateFieldPath = (_field: NormalizedField, _paths: string[]): void => {
     const { name } = _field.source;
-    const path = _paths.length === 0 ? name : `${_paths.join('.')}.${name}`;
+    const path = _paths.length === 0 ? [name] : [..._paths, name];
 
     updatedById[_field.id] = {
       ..._field,
@@ -400,6 +401,13 @@ export const filterTypesForMultiField = <T extends string = string>(
 ): ComboBoxOption[] =>
   options.filter(
     option => TYPE_NOT_ALLOWED_MULTIFIELD.includes(option.value as MainType) === false
+  );
+
+export const filterTypesForNonRootFields = <T extends string = string>(
+  options: ComboBoxOption[]
+): ComboBoxOption[] =>
+  options.filter(
+    option => TYPE_ONLY_ALLOWED_AT_ROOT_LEVEL.includes(option.value as MainType) === false
   );
 
 /**
