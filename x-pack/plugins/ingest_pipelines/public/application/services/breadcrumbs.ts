@@ -44,9 +44,21 @@ export class BreadcrumbService {
         }),
       },
     ];
+
+    this.breadcrumbs.edit = [
+      {
+        text: homeBreadcrumbText,
+        href: `#${BASE_PATH}`,
+      },
+      {
+        text: i18n.translate('xpack.ingestPipelines.breadcrumb.editPipelineLabel', {
+          defaultMessage: 'Edit pipeline',
+        }),
+      },
+    ];
   }
 
-  public setBreadcrumbs(type: 'create' | 'home'): void {
+  public setBreadcrumbs(type: 'create' | 'home' | 'edit'): void {
     if (!this.setBreadcrumbsHandler) {
       throw new Error('Breadcrumb service has not been initialized');
     }
