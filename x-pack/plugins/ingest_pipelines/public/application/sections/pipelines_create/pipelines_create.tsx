@@ -19,15 +19,13 @@ import {
 import { BASE_PATH } from '../../../../common/constants';
 import { Pipeline } from '../../../../common/types';
 import { useKibana } from '../../../shared_imports';
-import { PipelineForm, Tabs } from '../../components';
+import { PipelineForm } from '../../components';
 
 export const PipelinesCreate: React.FunctionComponent<RouteComponentProps> = ({ history }) => {
   const { services } = useKibana();
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveError, setSaveError] = useState<any>(null);
-  const [section, setSection] = useState<'build' | 'debug'>('build');
-  const stepsDataGetters = useRef<Record<string, any>>({});
 
   const onSave = async (pipeline: Pipeline) => {
     setIsSaving(true);
@@ -52,13 +50,6 @@ export const PipelinesCreate: React.FunctionComponent<RouteComponentProps> = ({ 
   useEffect(() => {
     services.breadcrumbs.setBreadcrumbs('create');
   }, [services]);
-
-  const setStepDataGetter = useCallback(
-    (stepDataGetter: any) => {
-      stepsDataGetters.current[section] = stepDataGetter;
-    },
-    [section]
-  );
 
   return (
     <EuiPageBody>
@@ -93,30 +84,12 @@ export const PipelinesCreate: React.FunctionComponent<RouteComponentProps> = ({ 
           </EuiFlexGroup>
         </EuiTitle>
 
-        <Tabs
-          onTabChange={async tab => {
-            // want data from the previous tab
-            // const prevTab = tab === 'build' ? 'debug' : 'build';
-            // const getFormData = stepsDataGetters.current[prevTab];
-            // console.log(await getFormData());
-            setSection(tab);
-          }}
-          selectedTab={section}
+        <PipelineForm
+          onSave={onSave}
+          onCancel={onCancel}
+          isSaving={isSaving}
+          saveError={saveError}
         />
-
-        <EuiSpacer size="l" />
-
-        {section === 'build' ? (
-          <PipelineForm
-            onSave={onSave}
-            onCancel={onCancel}
-            isSaving={isSaving}
-            saveError={saveError}
-            setDataGetter={setStepDataGetter}
-          />
-        ) : (
-          <div>debug mode</div>
-        )}
       </EuiPageContent>
     </EuiPageBody>
   );
