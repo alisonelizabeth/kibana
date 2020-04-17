@@ -3,7 +3,7 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { i18n } from '@kbn/i18n';
 import {
@@ -38,6 +38,7 @@ interface Props {
   saveError: any;
   defaultValue?: Pipeline;
   isEditing?: boolean;
+  setDataGetter: (dataGetter: any) => void;
 }
 
 const UseField = getUseField({ component: Field });
@@ -56,6 +57,7 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
   saveError,
   isEditing,
   onCancel,
+  setDataGetter,
 }) => {
   const { services } = useKibana();
 
@@ -65,16 +67,17 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
   );
   const [isRequestVisible, setIsRequestVisible] = useState<boolean>(false);
 
-  const handleSave: FormConfig['onSubmit'] = (formData, isValid) => {
-    if (isValid) {
-      onSave(formData as Pipeline);
-    }
-  };
+  // TODO
+  // const handleSave: FormConfig['onSubmit'] = (formData, isValid) => {
+  //   if (isValid) {
+  //     onSave(formData as Pipeline);
+  //   }
+  // };
 
   const { form } = useForm({
     schema: pipelineFormSchema,
     defaultValue,
-    onSubmit: handleSave,
+    // onSubmit: handleSave,
   });
 
   const saveButtonLabel = isSaving ? (
@@ -93,6 +96,10 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
       defaultMessage="Create pipeline"
     />
   );
+
+  useEffect(() => {
+    setDataGetter(form.submit);
+  }, [form.submit, setDataGetter]);
 
   return (
     <>
