@@ -19,20 +19,12 @@ import {
   EuiLink,
 } from '@elastic/eui';
 
-import {
-  useForm,
-  Form,
-  getUseField,
-  getFormRow,
-  Field,
-  FormConfig,
-  JsonEditorField,
-  useKibana,
-} from '../../../shared_imports';
 import { Pipeline } from '../../../../common/types';
+import { useKibana } from '../../../shared_imports';
 
 import { PipelineDebugFlyout } from './pipeline_debug_flyout';
 
+// todo fix
 interface Props {
   onSave: (pipeline: Pipeline) => void;
   onCancel: () => void;
@@ -41,26 +33,80 @@ interface Props {
   defaultValue?: Pipeline;
   isEditing?: boolean;
   setDataGetter: (dataGetter: any) => void;
+  pipeline: Pipeline;
 }
 
-const UseField = getUseField({ component: Field });
-const FormRow = getFormRow({ titleTag: 'h3' });
-
 export const PipelineDebugTab: React.FunctionComponent<Props> = ({ pipeline }) => {
-  // const { services } = useKibana();
+  const { services } = useKibana();
 
   const [isDocEditorVisible, setIsDocEditorVisible] = useState<boolean>(false);
+  const [isExecuting, setIsExecuting] = useState<boolean>(false);
+  const [executeError, setExecuteError] = useState<any>(null);
+  // const [setExecuteOutput, executeOutput] = useState<any>(undefined);
 
-  // console.log(pipeline);
+  const executePipeline = async data => {
+    // TODO update documents ref
+    const { documents, verbose } = data;
+    const { name, version, ...pipelineDefinition } = pipeline;
 
-  // const { form } = useForm({
-  //   schema: debugFormSchema,
-  //   defaultValue,
-  // });
+    setIsExecuting(true);
+    setExecuteError(null);
 
-  // useEffect(() => {
-  //   setDataGetter(form.submit);
-  // }, [form.submit, setDataGetter]);
+    const { error, data: output } = await services.api.simulatePipeline({
+      documents,
+      verbose,
+      pipeline: pipelineDefinition,
+    });
+
+    setIsExecuting(false);
+
+    if (error) {
+      setExecuteError(error);
+      return;
+    }
+
+    setIsDocEditorVisible(false);
+    // setExecuteOutput(output);
+  };
+
+  const content = (
+    <EuiEmptyPrompt
+      iconType="wrench"
+      title={
+        <h2>
+          {i18n.translate('xpack.ingestPipelines.debug.emptyPromptTitle', {
+            defaultMessage: 'Debug your pipeline',
+          })}
+        </h2>
+      }
+      body={
+        <p>
+          {i18n.translate('xpack.ingestPipelines.debug.emptyPromptDescription', {
+            defaultMessage: 'Execute your pipeline against a set of documents.',
+          })}
+        </p>
+      }
+      actions={
+        <EuiButton
+          color="primary"
+          fill
+          iconType="plusInCircle"
+          disabled={isDocEditorVisible}
+          onClick={() => setIsDocEditorVisible(true)}
+        >
+          {i18n.translate('xpack.ingestPipelines.debug.emptyPrompt.addDocumentsButtonLabel', {
+            defaultMessage: 'Add documents',
+          })}
+        </EuiButton>
+      }
+    />
+  );
+
+  // if (executeOutput) {
+  //   content = <EuiCodeBlock language="json">{JSON.stringify(executeOutput, null, 2)}</EuiCodeBlock>;
+  // }
+
+  // console.log(executeOutput);
 
   return (
     <>
@@ -87,40 +133,16 @@ export const PipelineDebugTab: React.FunctionComponent<Props> = ({ pipeline }) =
             />
           </b>
         </p>
-      </EuiText>
-      <EuiCodeBlock language="json">{JSON.stringify(STUBBED_DATA, null, 2)}</EuiCodeBlock> */}
+          </EuiText> */}
 
-      <EuiEmptyPrompt
-        iconType="wrench"
-        title={
-          <h2>
-            {i18n.translate('xpack.ingestPipelines.debug.emptyPromptTitle', {
-              defaultMessage: 'Debug your pipeline',
-            })}
-          </h2>
-        }
-        body={
-          <p>
-            {i18n.translate('xpack.ingestPipelines.debug.emptyPromptDescription', {
-              defaultMessage: 'Execute your pipeline against a set of documents.',
-            })}
-          </p>
-        }
-        actions={
-          <EuiButton
-            color="primary"
-            fill
-            iconType="plusInCircle"
-            onClick={() => setIsDocEditorVisible(true)}
-          >
-            {i18n.translate('xpack.ingestPipelines.debug.emptyPrompt.addDocumentsButtonLabel', {
-              defaultMessage: 'Add documents',
-            })}
-          </EuiButton>
-        }
-      />
+      {content}
+
+      {/* Add documents flyout */}
       {isDocEditorVisible && (
         <PipelineDebugFlyout
+          isExecuting={isExecuting}
+          executeError={executeError}
+          executePipeline={executePipeline}
           closeFlyout={() =>
             setIsDocEditorVisible(prevIsDocEditorVisible => !prevIsDocEditorVisible)
           }

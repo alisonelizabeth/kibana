@@ -6,6 +6,7 @@
 
 import React, { useRef } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
+import { i18n } from '@kbn/i18n';
 
 import {
   EuiButtonEmpty,
@@ -23,13 +24,49 @@ import {
   EuiSpacer,
   EuiText,
   EuiTitle,
+  EuiFormRow,
 } from '@elastic/eui';
+
+import { Pipeline } from '../../../../common/types';
+import {
+  useForm,
+  Form,
+  getUseField,
+  getFormRow,
+  Field,
+  FormConfig,
+  JsonEditorField,
+  useKibana,
+} from '../../../shared_imports';
+import { debugFormSchema } from './debug_schema';
 
 interface Props {
   closeFlyout: () => void;
+  defaultValue?: any; // todo fix
+  executePipeline: () => void;
+  isExecuting: boolean;
+  executeError: any; // todo fix?
 }
 
-export const PipelineDebugFlyout: React.FunctionComponent<Props> = ({ closeFlyout }) => {
+const UseField = getUseField({ component: Field });
+
+export const PipelineDebugFlyout: React.FunctionComponent<Props> = ({
+  closeFlyout,
+  defaultValue,
+  executePipeline,
+  isExecuting,
+  executeError,
+}) => {
+  const { form } = useForm({
+    schema: debugFormSchema,
+    // TODO move this out into pipeline_debug?
+    defaultValue: {
+      verbose: false,
+      documents: '',
+    },
+    onSubmit: executePipeline,
+  });
+
   return (
     <EuiFlyout maxWidth={480} onClose={closeFlyout}>
       <EuiFlyoutHeader>
@@ -57,37 +94,34 @@ export const PipelineDebugFlyout: React.FunctionComponent<Props> = ({ closeFlyou
 
         <EuiSpacer />
 
-        <EuiSwitch
-          label={
-            <>
-              <FormattedMessage
-                id="xpack.ingestPipelines.debugFlyout.verboseSwitchLabel"
-                defaultMessage="Enable verbose output"
-              />{' '}
-              <EuiIconTip content="TBD" position="right" />
-            </>
-          }
-          checked={false}
-          onChange={e => {}}
-        />
+        {/* TODO: Add error validation */}
+        <Form form={form} data-test-subj="addDocumentsForm">
+          {/* Verbose toggle */}
+          <UseField
+            path="verbose"
+            componentProps={{
+              ['data-test-subj']: 'verboseField',
+            }}
+          />
 
-        <EuiSpacer />
-
-        <EuiTitle size="xs">
-          <h3>
-            <FormattedMessage
-              id="xpack.ingestPipelines.debugFlyout.editorLabe;"
-              defaultMessage="Documents"
-            />
-          </h3>
-        </EuiTitle>
-        <EuiSpacer size="s" />
-        <EuiCodeEditor
-          mode="json"
-          theme="textmate"
-          width="100%"
-          value={JSON.stringify([], null, 2)}
-        />
+          {/* Documents editor */}
+          <UseField
+            path="documents"
+            component={JsonEditorField}
+            componentProps={{
+              ['data-test-subj']: 'documentsField',
+              euiCodeEditorProps: {
+                height: '300px',
+                'aria-label': i18n.translate(
+                  'xpack.ingestPipelines.debugFlyout.documentsFieldAriaLabel',
+                  {
+                    defaultMessage: 'Documents JSON editor',
+                  }
+                ),
+              },
+            }}
+          />
+        </Form>
       </EuiFlyoutBody>
 
       <EuiFlyoutFooter>
@@ -101,8 +135,18 @@ export const PipelineDebugFlyout: React.FunctionComponent<Props> = ({ closeFlyou
             </EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton onClick={closeFlyout} fill>
-              Run
+            <EuiButton onClick={form.submit} fill iconType="play" isLoading={isExecuting}>
+              {isExecuting ? (
+                <FormattedMessage
+                  id="xpack.ingestPipelines.debugFlyout.runningButtonLabel"
+                  defaultMessage="Running"
+                />
+              ) : (
+                <FormattedMessage
+                  id="xpack.ingestPipelines.debugFlyout.runButtonLabel"
+                  defaultMessage="Run"
+                />
+              )}
             </EuiButton>
           </EuiFlexItem>
         </EuiFlexGroup>

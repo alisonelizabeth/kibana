@@ -15,7 +15,7 @@ import {
   useRequest as _useRequest,
 } from '../../shared_imports';
 import { UiMetricService } from './ui_metric';
-import { UIM_PIPELINE_CREATE, UIM_PIPELINE_UPDATE } from '../constants';
+import { UIM_PIPELINE_CREATE, UIM_PIPELINE_UPDATE, UIM_PIPELINE_SIMULATE } from '../constants';
 
 export class ApiService {
   private client: HttpSetup | undefined;
@@ -84,6 +84,19 @@ export class ApiService {
     });
 
     this.trackUiMetric(UIM_PIPELINE_UPDATE);
+
+    return result;
+  }
+
+  // todo fix TS: simulateDefinition: any
+  public async simulatePipeline(simulateDefinition: any) {
+    const result = await this.sendRequest({
+      path: `${API_BASE_PATH}/simulate`,
+      method: 'post',
+      body: JSON.stringify(simulateDefinition),
+    });
+
+    this.trackUiMetric(UIM_PIPELINE_SIMULATE);
 
     return result;
   }

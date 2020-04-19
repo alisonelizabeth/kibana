@@ -68,8 +68,8 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
     const { isValid, data } = await validateAndGetStepData();
 
     if (isValid) {
-      // Update the template object with the current step data
-      pipeline.current = { ...pipeline.current, ...data };
+      // Update the pipeline object with the current data
+      pipeline.current = { ...data };
     }
 
     return { isValid, data };
@@ -98,6 +98,7 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
           isSaving={isSaving}
           saveError={saveError}
           setDataGetter={setTabDataGetter}
+          isEditing={isEditing}
         />
       ) : (
         <PipelineDebugTab pipeline={pipeline.current} />
