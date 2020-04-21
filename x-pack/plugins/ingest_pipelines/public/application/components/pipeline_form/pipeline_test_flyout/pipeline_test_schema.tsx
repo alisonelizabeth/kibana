@@ -3,16 +3,13 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import React from 'react';
 import { i18n } from '@kbn/i18n';
-import { FormattedMessage } from '@kbn/i18n/react';
 
-import { EuiIconTip } from '@elastic/eui';
-
-import { FormSchema, fieldValidators, FIELD_TYPES } from '../../../shared_imports';
+import { FormSchema, fieldValidators } from '../../../../shared_imports';
 
 const { emptyField, isJsonField } = fieldValidators;
 
+// TODO move to lib?
 const stringifyJson = (json: { [key: string]: unknown }): string =>
   Array.isArray(json) ? JSON.stringify(json, null, 2) : '[\n\n]';
 
@@ -33,25 +30,8 @@ const parseJson = (jsonString: string): object[] => {
   return parsedJSON;
 };
 
-export const debugFormSchema: FormSchema = {
-  verbose: {
-    type: FIELD_TYPES.TOGGLE,
-    label: (
-      <>
-        <FormattedMessage
-          id="xpack.ingestPipelines.debugFlyout.verboseSwitchLabel"
-          defaultMessage="Enable verbose output"
-        />{' '}
-        <EuiIconTip
-          content={i18n.translate('xpack.ingestPipelines.debugFlyout.verboseSwitchTooltipLabel', {
-            defaultMessage:
-              'Include output data for each processor in the executed pipeline response',
-          })}
-          position="right"
-        />
-      </>
-    ),
-  },
+export const pipelineTestSchema: FormSchema = {
+  // TODO validation: at least one document required
   documents: {
     label: i18n.translate('xpack.ingestPipelines.debugForm.documentsFieldLabel', {
       defaultMessage: 'Documents',
