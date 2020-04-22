@@ -4,59 +4,32 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { i18n } from '@kbn/i18n';
 
-import {
-  EuiButtonEmpty,
-  EuiButton,
-  EuiFlexItem,
-  EuiFlexGroup,
-  EuiCodeBlock,
-  EuiFlyout,
-  EuiFlyoutBody,
-  EuiFlyoutFooter,
-  EuiFlyoutHeader,
-  EuiSpacer,
-  EuiText,
-  EuiTitle,
-  EuiSwitch,
-} from '@elastic/eui';
+import { EuiSpacer, EuiText, EuiLink } from '@elastic/eui';
 
-import { Pipeline } from '../../../../../common/types';
-import {
-  useForm,
-  Form,
-  getUseField,
-  Field,
-  JsonEditorField,
-  useKibana,
-  FormConfig,
-} from '../../../../shared_imports';
-import { SectionError } from '../../section_error';
-import { pipelineTestSchema } from './pipeline_test_schema';
-import { PipelineTestTabs, Tab } from './pipeline_test_tabs';
-import { Output } from './output';
-
-export interface PipelineTestFlyoutProps {
-  closeFlyout: () => void;
-  pipeline: Pipeline;
-  setDataGetter: any;
-  documentsCache?: object[];
-  updateDocumentsCache: () => Promise<void>;
-}
+import { getUseField, Field, JsonEditorField } from '../../../../shared_imports';
 
 const UseField = getUseField({ component: Field });
 
-export const Documents = ({}) => {
+interface Props {
+  isResultsLinkDisabled: boolean;
+  changeTabs: () => void;
+}
+
+export const DocumentsTab: React.FunctionComponent<Props> = ({
+  isResultsLinkDisabled,
+  changeTabs,
+}) => {
   return (
     <>
       <EuiText>
         <p>
           <FormattedMessage
             id="xpack.ingestPipelines.testPipelineFlyout.documentsTab.descriptionText"
-            defaultMessage="Provide an array of documents to be ingested by the pipeline."
+            defaultMessage="Provide an array of documents to be ingested by the pipeline and simulate the output."
           />
         </p>
       </EuiText>

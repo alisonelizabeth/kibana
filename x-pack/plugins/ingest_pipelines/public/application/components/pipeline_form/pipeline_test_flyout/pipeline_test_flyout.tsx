@@ -13,51 +13,43 @@ import {
   EuiButton,
   EuiFlexItem,
   EuiFlexGroup,
-  EuiCodeBlock,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutFooter,
   EuiFlyoutHeader,
   EuiSpacer,
-  EuiText,
   EuiTitle,
-  EuiSwitch,
 } from '@elastic/eui';
 
 import { Pipeline } from '../../../../../common/types';
-import {
-  useForm,
-  Form,
-  getUseField,
-  Field,
-  JsonEditorField,
-  useKibana,
-  FormConfig,
-} from '../../../../shared_imports';
+import { useForm, Form, useKibana, FormConfig } from '../../../../shared_imports';
 import { SectionError } from '../../section_error';
 import { pipelineTestSchema } from './pipeline_test_schema';
 import { PipelineTestTabs, Tab } from './pipeline_test_tabs';
-import { Output } from './output';
-import { Documents } from './documents';
-import { documentContext } from '../documents';
+import { OutputTab } from './tab_output';
+import { DocumentsTab } from './tab_documents';
+import { testConfigContext, TestConfig } from '../test_config_context';
 
-export interface PipelineTestFlyoutProps {
+export interface Props {
   closeFlyout: () => void;
   pipeline: Pipeline;
 }
 
-export const PipelineTestFlyout: React.FunctionComponent<PipelineTestFlyoutProps> = ({
-  closeFlyout,
-  pipeline,
-}) => {
+export const PipelineTestFlyout: React.FunctionComponent<Props> = ({ closeFlyout, pipeline }) => {
   const { services } = useKibana();
-  const { setCurrentDocuments, documents: currentDocuments } = useContext(documentContext);
 
-  const [selectedTab, setSelectedTab] = useState<Tab>('documents');
+  const { setCurrentTestConfig, testConfig } = useContext(testConfigContext);
+  const {
+    verbose: cachedVerbose,
+    documents: cachedDocuments,
+    executeOutput: cachedExecuteOutput,
+  } = testConfig;
+
+  const initialSelectedTab = cachedExecuteOutput ? 'output' : 'documents';
+  const [selectedTab, setSelectedTab] = useState<Tab>(initialSelectedTab);
+
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [executeError, setExecuteError] = useState<any>(null);
-  const [executeOutput, setExecuteOutput] = useState<any>(undefined);
-  const [isVerboseEnabled, setIsVerboseEnabled] = useState<boolean>(false);
 
   const { name: pipelineName, ...pipelineDefinition } = pipeline;
 
@@ -66,16 +58,19 @@ export const PipelineTestFlyout: React.FunctionComponent<PipelineTestFlyoutProps
       return;
     }
 
-    const { documents } = formData;
+    const { documents, verbose } = formData as TestConfig;
     const isDocumentsTab = selectedTab === 'documents';
+    const isOutputTab = selectedTab === 'output';
+    const currentDocuments = isDocumentsTab ? documents : testConfig!.documents;
+    const currentVerbose = isOutputTab ? verbose : testConfig!.verbose;
 
     setIsExecuting(true);
     setExecuteError(null);
 
     const { error, data: output } = await services.api.simulatePipeline({
-      documents: isDocumentsTab ? documents : currentDocuments!.documents,
+      documents: currentDocuments,
       pipeline: pipelineDefinition,
-      verbose: isVerboseEnabled,
+      verbose: currentVerbose,
     });
 
     setIsExecuting(false);
@@ -85,52 +80,46 @@ export const PipelineTestFlyout: React.FunctionComponent<PipelineTestFlyoutProps
       return;
     }
 
-    // update context, only applicable on documents tab
-    // TODO add verbose to schema
-    // TODO here we would either update documents context or verbose
-    if (isDocumentsTab) {
-      setCurrentDocuments({ documents });
-    }
+    // Update context if successful
+    setCurrentTestConfig({
+      verbose: currentVerbose,
+      documents: currentDocuments,
+      executeOutput: output,
+    });
 
-    // setSelectedTab('output');
-    setExecuteOutput(output);
+    setSelectedTab('output');
+    // TODO Add toast notification
   };
 
   const { form } = useForm({
     schema: pipelineTestSchema,
     defaultValue: {
-      documents: currentDocuments?.documents || '',
+      documents: cachedDocuments || '',
+      verbose: cachedVerbose || false,
     },
     onSubmit: executePipeline,
   });
 
-  // Default to 'documents' tab
-  let tabContent = <Documents />;
+  // Default to "documents" tab
+  let tabContent = (
+    <DocumentsTab
+      changeTabs={() => setSelectedTab('output')}
+      isResultsLinkDisabled={isExecuting || Boolean(!cachedExecuteOutput)}
+    />
+  );
 
   if (selectedTab === 'output') {
-    tabContent = (
-      <Output
-        isVerboseEnabled={isVerboseEnabled}
-        setIsVerboseEnabled={setIsVerboseEnabled}
-        executeOutput={executeOutput}
-      />
-    );
+    tabContent = <OutputTab executeOutput={cachedExecuteOutput!} />;
   }
 
   return (
-    <EuiFlyout
-      maxWidth={480}
-      onClose={async () => {
-        // await updateDocumentsCache();
-        closeFlyout();
-      }}
-    >
+    <EuiFlyout maxWidth={480} onClose={closeFlyout}>
       <EuiFlyoutHeader>
         <EuiTitle>
           <h2>
             {pipelineName ? (
               <FormattedMessage
-                id="xpack.ingestPipelines.testPipelineFlyout.withPipelineNametitle"
+                id="xpack.ingestPipelines.testPipelineFlyout.withPipelineNameTitle"
                 defaultMessage="Test pipeline '{pipelineName}'"
                 values={{
                   pipelineName,
@@ -148,12 +137,9 @@ export const PipelineTestFlyout: React.FunctionComponent<PipelineTestFlyoutProps
 
       <EuiFlyoutBody>
         <PipelineTestTabs
-          onTabChange={async tab => {
-            // await updateDocumentsCache();
-            setSelectedTab(tab);
-          }}
+          onTabChange={setSelectedTab}
           selectedTab={selectedTab}
-          getIsDisabled={tabId => !executeOutput && tabId === 'output'}
+          getIsDisabled={tabId => !cachedExecuteOutput && tabId === 'output'}
         />
 
         <EuiSpacer />

@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { i18n } from '@kbn/i18n';
 import {
@@ -26,15 +26,13 @@ import {
   FormConfig,
   JsonEditorField,
   useKibana,
-  FormDataProvider,
 } from '../../../shared_imports';
 import { Pipeline } from '../../../../common/types';
 
 import { SectionError, PipelineRequestFlyout } from '../';
 import { pipelineFormSchema } from './schema';
 import { PipelineTestFlyout } from './pipeline_test_flyout';
-import { useDocuments } from './document_hook';
-import { documentContext } from './documents';
+import { testConfigContext, useTestConfig } from './test_config_context';
 
 interface Props {
   onSave: (pipeline: Pipeline) => void;
@@ -83,9 +81,6 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
     onSubmit: handleSave,
   });
 
-  // TODO rename
-  const test = useDocuments();
-
   const saveButtonLabel = isSaving ? (
     <FormattedMessage
       id="xpack.ingestPipelines.form.savingButtonLabel"
@@ -103,9 +98,11 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
     />
   );
 
+  const testConfigContextValue = useTestConfig();
+
   return (
     <>
-      <documentContext.Provider value={test}>
+      <testConfigContext.Provider value={testConfigContextValue}>
         <Form
           form={form}
           data-test-subj="pipelineForm"
@@ -387,7 +384,7 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
         </Form>
 
         <EuiSpacer size="m" />
-      </documentContext.Provider>
+      </testConfigContext.Provider>
     </>
   );
 };
