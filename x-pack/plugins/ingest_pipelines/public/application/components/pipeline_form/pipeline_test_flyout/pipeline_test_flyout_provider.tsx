@@ -8,9 +8,11 @@ import React, { useState, useEffect } from 'react';
 
 import { Pipeline } from '../../../../../common/types';
 import { useFormContext } from '../../../../shared_imports';
-import { PipelineTestFlyout } from './pipeline_test_flyout';
+import { PipelineTestFlyout, PipelineTestFlyoutProps } from './pipeline_test_flyout';
 
-export const PipelineTestFlyoutProvider = ({ closeFlyout }: { closeFlyout: () => void }) => {
+type Props = Omit<PipelineTestFlyoutProps, 'pipeline'>;
+
+export const PipelineTestFlyoutProvider: React.FunctionComponent<Props> = ({ closeFlyout }) => {
   const form = useFormContext();
   const [formData, setFormData] = useState<Pipeline>({} as Pipeline);
 

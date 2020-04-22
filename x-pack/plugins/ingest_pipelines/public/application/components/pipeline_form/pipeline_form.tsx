@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { i18n } from '@kbn/i18n';
 import {
@@ -33,6 +33,8 @@ import { Pipeline } from '../../../../common/types';
 import { SectionError, PipelineRequestFlyout } from '../';
 import { pipelineFormSchema } from './schema';
 import { PipelineTestFlyout } from './pipeline_test_flyout';
+import { useDocuments } from './document_hook';
+import { documentContext } from './documents';
 
 interface Props {
   onSave: (pipeline: Pipeline) => void;
@@ -41,7 +43,6 @@ interface Props {
   saveError: any;
   defaultValue?: Pipeline;
   isEditing?: boolean;
-  // setDataGetter: (dataGetter: any) => void;
 }
 
 const UseField = getUseField({ component: Field });
@@ -82,9 +83,8 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
     onSubmit: handleSave,
   });
 
-  // useEffect(() => {
-  //   setDataGetter(form.submit);
-  // }, [form.submit, setDataGetter]);
+  // TODO rename
+  const test = useDocuments();
 
   const saveButtonLabel = isSaving ? (
     <FormattedMessage
@@ -105,284 +105,289 @@ export const PipelineForm: React.FunctionComponent<Props> = ({
 
   return (
     <>
-      <Form
-        form={form}
-        data-test-subj="pipelineForm"
-        isInvalid={form.isSubmitted && !form.isValid}
-        error={form.getErrors()}
-      >
-        {/* Name field with optional version field */}
-        <FormRow
-          title={
-            <FormattedMessage id="xpack.ingestPipelines.form.nameTitle" defaultMessage="Name" />
-          }
-          description={
-            <>
-              <FormattedMessage
-                id="xpack.ingestPipelines.form.nameDescription"
-                defaultMessage="A unique identifier for this pipeline."
-              />
-              <EuiSpacer size="m" />
-              <EuiSwitch
-                label={
-                  <FormattedMessage
-                    id="xpack.ingestPipelines.form.versionToggleDescription"
-                    defaultMessage="Add version number"
-                  />
-                }
-                checked={isVersionVisible}
-                onChange={e => setIsVersionVisible(e.target.checked)}
-                data-test-subj="versionToggle"
-              />
-            </>
-          }
+      <documentContext.Provider value={test}>
+        <Form
+          form={form}
+          data-test-subj="pipelineForm"
+          isInvalid={form.isSubmitted && !form.isValid}
+          error={form.getErrors()}
         >
-          <UseField
-            path="name"
-            componentProps={{
-              ['data-test-subj']: 'nameField',
-              euiFieldProps: { disabled: Boolean(isEditing) },
-            }}
-          />
-
-          {isVersionVisible && (
+          {/* Name field with optional version field */}
+          <FormRow
+            title={
+              <FormattedMessage id="xpack.ingestPipelines.form.nameTitle" defaultMessage="Name" />
+            }
+            description={
+              <>
+                <FormattedMessage
+                  id="xpack.ingestPipelines.form.nameDescription"
+                  defaultMessage="A unique identifier for this pipeline."
+                />
+                <EuiSpacer size="m" />
+                <EuiSwitch
+                  label={
+                    <FormattedMessage
+                      id="xpack.ingestPipelines.form.versionToggleDescription"
+                      defaultMessage="Add version number"
+                    />
+                  }
+                  checked={isVersionVisible}
+                  onChange={e => setIsVersionVisible(e.target.checked)}
+                  data-test-subj="versionToggle"
+                />
+              </>
+            }
+          >
             <UseField
-              path="version"
+              path="name"
               componentProps={{
-                ['data-test-subj']: 'versionField',
+                ['data-test-subj']: 'nameField',
+                euiFieldProps: { disabled: Boolean(isEditing) },
               }}
             />
-          )}
-        </FormRow>
 
-        {/* Description field */}
-        <FormRow
-          title={
-            <FormattedMessage
-              id="xpack.ingestPipelines.form.descriptionFieldTitle"
-              defaultMessage="Description"
-            />
-          }
-          description={
-            <FormattedMessage
-              id="xpack.ingestPipelines.form.descriptionFieldDescription"
-              defaultMessage="The description to apply to the pipeline."
-            />
-          }
-        >
-          <UseField
-            path="description"
-            componentProps={{
-              ['data-test-subj']: 'descriptionField',
-              euiFieldProps: {
-                compressed: true,
-              },
-            }}
-          />
-        </FormRow>
-
-        {/* Processors field */}
-        <FormRow
-          title={
-            <FormattedMessage
-              id="xpack.ingestPipelines.form.processorsFieldTitle"
-              defaultMessage="Processors"
-            />
-          }
-          description={
-            <>
-              <FormattedMessage
-                id="xpack.ingestPipelines.form.processorsFieldDescription"
-                defaultMessage="The processors used to pre-process documents before indexing. {learnMoreLink}"
-                values={{
-                  learnMoreLink: (
-                    <EuiLink href={services.documentation.getProcessorsUrl()} target="_blank">
-                      {i18n.translate('xpack.ingestPipelines.form.processorsDocumentionLink', {
-                        defaultMessage: 'Learn more.',
-                      })}
-                    </EuiLink>
-                  ),
+            {isVersionVisible && (
+              <UseField
+                path="version"
+                componentProps={{
+                  ['data-test-subj']: 'versionField',
                 }}
               />
+            )}
+          </FormRow>
 
-              <EuiSpacer />
-
-              <EuiButton
-                size="s"
-                onClick={() => setIsTestingPipeline(true)}
-                disabled={isTestingPipeline || form.isValid === false}
-              >
-                <FormattedMessage
-                  id="xpack.ingestPipelines.form.testPipelineButtonLabel"
-                  defaultMessage="Test pipeline"
-                />
-              </EuiButton>
-            </>
-          }
-        >
-          <UseField
-            path="processors"
-            component={JsonEditorField}
-            componentProps={{
-              ['data-test-subj']: 'processorsField',
-              euiCodeEditorProps: {
-                height: '300px',
-                'aria-label': i18n.translate(
-                  'xpack.ingestPipelines.form.processorsFieldAriaLabel',
-                  {
-                    defaultMessage: 'Processors JSON editor',
-                  }
-                ),
-              },
-            }}
-          />
-        </FormRow>
-
-        {/* On-failure field */}
-        <FormRow
-          title={
-            <FormattedMessage
-              id="xpack.ingestPipelines.form.onFailureTitle"
-              defaultMessage="Failure processors"
-            />
-          }
-          description={
-            <>
+          {/* Description field */}
+          <FormRow
+            title={
               <FormattedMessage
-                id="xpack.ingestPipelines.form.onFailureDescription"
-                defaultMessage="The processors to be executed following a failed processor. {learnMoreLink}"
-                values={{
-                  learnMoreLink: (
-                    <EuiLink href={services.documentation.getHandlingFailureUrl()} target="_blank">
-                      {i18n.translate('xpack.ingestPipelines.form.onFailureDocumentionLink', {
-                        defaultMessage: 'Learn more.',
-                      })}
-                    </EuiLink>
-                  ),
-                }}
+                id="xpack.ingestPipelines.form.descriptionFieldTitle"
+                defaultMessage="Description"
               />
-              <EuiSpacer size="m" />
-              <EuiSwitch
-                label={
-                  <FormattedMessage
-                    id="xpack.ingestPipelines.form.onFailureToggleDescription"
-                    defaultMessage="Add on-failure processors"
-                  />
-                }
-                checked={isOnFailureEditorVisible}
-                onChange={e => setIsOnFailureEditorVisible(e.target.checked)}
-                data-test-subj="onFailureToggle"
+            }
+            description={
+              <FormattedMessage
+                id="xpack.ingestPipelines.form.descriptionFieldDescription"
+                defaultMessage="The description to apply to the pipeline."
               />
-            </>
-          }
-        >
-          {isOnFailureEditorVisible ? (
+            }
+          >
             <UseField
-              path="on_failure"
+              path="description"
+              componentProps={{
+                ['data-test-subj']: 'descriptionField',
+                euiFieldProps: {
+                  compressed: true,
+                },
+              }}
+            />
+          </FormRow>
+
+          {/* Processors field */}
+          <FormRow
+            title={
+              <FormattedMessage
+                id="xpack.ingestPipelines.form.processorsFieldTitle"
+                defaultMessage="Processors"
+              />
+            }
+            description={
+              <>
+                <FormattedMessage
+                  id="xpack.ingestPipelines.form.processorsFieldDescription"
+                  defaultMessage="The processors used to pre-process documents before indexing. {learnMoreLink}"
+                  values={{
+                    learnMoreLink: (
+                      <EuiLink href={services.documentation.getProcessorsUrl()} target="_blank">
+                        {i18n.translate('xpack.ingestPipelines.form.processorsDocumentionLink', {
+                          defaultMessage: 'Learn more.',
+                        })}
+                      </EuiLink>
+                    ),
+                  }}
+                />
+
+                <EuiSpacer />
+
+                <EuiButton
+                  size="s"
+                  onClick={() => setIsTestingPipeline(true)}
+                  disabled={isTestingPipeline || form.isValid === false}
+                >
+                  <FormattedMessage
+                    id="xpack.ingestPipelines.form.testPipelineButtonLabel"
+                    defaultMessage="Test pipeline"
+                  />
+                </EuiButton>
+              </>
+            }
+          >
+            <UseField
+              path="processors"
               component={JsonEditorField}
               componentProps={{
-                ['data-test-subj']: 'onFailureEditor',
+                ['data-test-subj']: 'processorsField',
                 euiCodeEditorProps: {
                   height: '300px',
                   'aria-label': i18n.translate(
-                    'xpack.ingestPipelines.form.onFailureFieldAriaLabel',
+                    'xpack.ingestPipelines.form.processorsFieldAriaLabel',
                     {
-                      defaultMessage: 'On-failure processors JSON editor',
+                      defaultMessage: 'Processors JSON editor',
                     }
                   ),
                 },
               }}
             />
-          ) : (
-            // <FormRow/> requires children or a field
-            // For now, we return an empty <div> if the editor is not visible
-            <div />
-          )}
-        </FormRow>
+          </FormRow>
 
-        <EuiSpacer size="l" />
-
-        {/* Request error */}
-        {saveError ? (
-          <>
-            <SectionError
-              title={
-                <FormattedMessage
-                  id="xpack.ingestPipelines.form.savePipelineError"
-                  defaultMessage="Unable to create pipeline"
-                />
-              }
-              error={saveError}
-              data-test-subj="savePipelineError"
-            />
-            <EuiSpacer size="m" />
-          </>
-        ) : null}
-
-        {/* Form submission */}
-        <EuiFlexGroup justifyContent="spaceBetween">
-          <EuiFlexItem grow={false}>
-            <EuiFlexGroup>
-              <EuiFlexItem>
-                <EuiButton
-                  fill
-                  color="secondary"
-                  iconType="check"
-                  onClick={form.submit}
-                  data-test-subj="submitButton"
-                  disabled={form.isSubmitted && form.isValid === false}
-                  isLoading={isSaving}
-                >
-                  {saveButtonLabel}
-                </EuiButton>
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiButtonEmpty color="primary" onClick={onCancel}>
-                  <FormattedMessage
-                    id="xpack.ingestPipelines.form.cancelButtonLabel"
-                    defaultMessage="Cancel"
-                  />
-                </EuiButtonEmpty>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiButtonEmpty
-              onClick={() => setIsRequestVisible(prevIsRequestVisible => !prevIsRequestVisible)}
-            >
-              {isRequestVisible ? (
-                <FormattedMessage
-                  id="xpack.ingestPipelines.form.hideRequestButtonLabel"
-                  defaultMessage="Hide request"
-                />
-              ) : (
-                <FormattedMessage
-                  id="xpack.ingestPipelines.form.showRequestButtonLabel"
-                  defaultMessage="Show request"
-                />
-              )}
-            </EuiButtonEmpty>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-
-        {/* ES request flyout */}
-        {isRequestVisible ? (
-          <PipelineRequestFlyout
-            closeFlyout={() => setIsRequestVisible(prevIsRequestVisible => !prevIsRequestVisible)}
-          />
-        ) : null}
-
-        {/* Test pipeline flyout */}
-        {isTestingPipeline ? (
-          <PipelineTestFlyout
-            closeFlyout={() =>
-              setIsTestingPipeline(prevIsTestingPipeline => !prevIsTestingPipeline)
+          {/* On-failure field */}
+          <FormRow
+            title={
+              <FormattedMessage
+                id="xpack.ingestPipelines.form.onFailureTitle"
+                defaultMessage="Failure processors"
+              />
             }
-          />
-        ) : null}
-      </Form>
+            description={
+              <>
+                <FormattedMessage
+                  id="xpack.ingestPipelines.form.onFailureDescription"
+                  defaultMessage="The processors to be executed following a failed processor. {learnMoreLink}"
+                  values={{
+                    learnMoreLink: (
+                      <EuiLink
+                        href={services.documentation.getHandlingFailureUrl()}
+                        target="_blank"
+                      >
+                        {i18n.translate('xpack.ingestPipelines.form.onFailureDocumentionLink', {
+                          defaultMessage: 'Learn more.',
+                        })}
+                      </EuiLink>
+                    ),
+                  }}
+                />
+                <EuiSpacer size="m" />
+                <EuiSwitch
+                  label={
+                    <FormattedMessage
+                      id="xpack.ingestPipelines.form.onFailureToggleDescription"
+                      defaultMessage="Add on-failure processors"
+                    />
+                  }
+                  checked={isOnFailureEditorVisible}
+                  onChange={e => setIsOnFailureEditorVisible(e.target.checked)}
+                  data-test-subj="onFailureToggle"
+                />
+              </>
+            }
+          >
+            {isOnFailureEditorVisible ? (
+              <UseField
+                path="on_failure"
+                component={JsonEditorField}
+                componentProps={{
+                  ['data-test-subj']: 'onFailureEditor',
+                  euiCodeEditorProps: {
+                    height: '300px',
+                    'aria-label': i18n.translate(
+                      'xpack.ingestPipelines.form.onFailureFieldAriaLabel',
+                      {
+                        defaultMessage: 'On-failure processors JSON editor',
+                      }
+                    ),
+                  },
+                }}
+              />
+            ) : (
+              // <FormRow/> requires children or a field
+              // For now, we return an empty <div> if the editor is not visible
+              <div />
+            )}
+          </FormRow>
 
-      <EuiSpacer size="m" />
+          <EuiSpacer size="l" />
+
+          {/* Request error */}
+          {saveError ? (
+            <>
+              <SectionError
+                title={
+                  <FormattedMessage
+                    id="xpack.ingestPipelines.form.savePipelineError"
+                    defaultMessage="Unable to create pipeline"
+                  />
+                }
+                error={saveError}
+                data-test-subj="savePipelineError"
+              />
+              <EuiSpacer size="m" />
+            </>
+          ) : null}
+
+          {/* Form submission */}
+          <EuiFlexGroup justifyContent="spaceBetween">
+            <EuiFlexItem grow={false}>
+              <EuiFlexGroup>
+                <EuiFlexItem>
+                  <EuiButton
+                    fill
+                    color="secondary"
+                    iconType="check"
+                    onClick={form.submit}
+                    data-test-subj="submitButton"
+                    disabled={form.isSubmitted && form.isValid === false}
+                    isLoading={isSaving}
+                  >
+                    {saveButtonLabel}
+                  </EuiButton>
+                </EuiFlexItem>
+                <EuiFlexItem>
+                  <EuiButtonEmpty color="primary" onClick={onCancel}>
+                    <FormattedMessage
+                      id="xpack.ingestPipelines.form.cancelButtonLabel"
+                      defaultMessage="Cancel"
+                    />
+                  </EuiButtonEmpty>
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty
+                onClick={() => setIsRequestVisible(prevIsRequestVisible => !prevIsRequestVisible)}
+              >
+                {isRequestVisible ? (
+                  <FormattedMessage
+                    id="xpack.ingestPipelines.form.hideRequestButtonLabel"
+                    defaultMessage="Hide request"
+                  />
+                ) : (
+                  <FormattedMessage
+                    id="xpack.ingestPipelines.form.showRequestButtonLabel"
+                    defaultMessage="Show request"
+                  />
+                )}
+              </EuiButtonEmpty>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+
+          {/* ES request flyout */}
+          {isRequestVisible ? (
+            <PipelineRequestFlyout
+              closeFlyout={() => setIsRequestVisible(prevIsRequestVisible => !prevIsRequestVisible)}
+            />
+          ) : null}
+
+          {/* Test pipeline flyout */}
+          {isTestingPipeline ? (
+            <PipelineTestFlyout
+              closeFlyout={() => {
+                setIsTestingPipeline(prevIsTestingPipeline => !prevIsTestingPipeline);
+              }}
+            />
+          ) : null}
+        </Form>
+
+        <EuiSpacer size="m" />
+      </documentContext.Provider>
     </>
   );
 };

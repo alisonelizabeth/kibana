@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { i18n } from '@kbn/i18n';
 
@@ -21,6 +21,7 @@ import {
   EuiSpacer,
   EuiText,
   EuiTitle,
+  EuiSwitch,
 } from '@elastic/eui';
 
 import { Pipeline } from '../../../../../common/types';
@@ -36,26 +37,27 @@ import {
 import { SectionError } from '../../section_error';
 import { pipelineTestSchema } from './pipeline_test_schema';
 import { PipelineTestTabs, Tab } from './pipeline_test_tabs';
+import { Output } from './output';
+import { Documents } from './documents';
+import { documentContext } from '../documents';
 
-interface Props {
+export interface PipelineTestFlyoutProps {
   closeFlyout: () => void;
   pipeline: Pipeline;
-  initialDocuments?: object[];
 }
 
-const UseField = getUseField({ component: Field });
-
-export const PipelineTestFlyout: React.FunctionComponent<Props> = ({
+export const PipelineTestFlyout: React.FunctionComponent<PipelineTestFlyoutProps> = ({
   closeFlyout,
   pipeline,
-  initialDocuments = '',
 }) => {
   const { services } = useKibana();
+  const { setCurrentDocuments, documents: currentDocuments } = useContext(documentContext);
 
   const [selectedTab, setSelectedTab] = useState<Tab>('documents');
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [executeError, setExecuteError] = useState<any>(null);
   const [executeOutput, setExecuteOutput] = useState<any>(undefined);
+  const [isVerboseEnabled, setIsVerboseEnabled] = useState<boolean>(false);
 
   const { name: pipelineName, ...pipelineDefinition } = pipeline;
 
@@ -65,13 +67,15 @@ export const PipelineTestFlyout: React.FunctionComponent<Props> = ({
     }
 
     const { documents } = formData;
+    const isDocumentsTab = selectedTab === 'documents';
 
     setIsExecuting(true);
     setExecuteError(null);
 
     const { error, data: output } = await services.api.simulatePipeline({
-      documents,
+      documents: isDocumentsTab ? documents : currentDocuments!.documents,
       pipeline: pipelineDefinition,
+      verbose: isVerboseEnabled,
     });
 
     setIsExecuting(false);
@@ -81,83 +85,46 @@ export const PipelineTestFlyout: React.FunctionComponent<Props> = ({
       return;
     }
 
-    setSelectedTab('output');
+    // update context, only applicable on documents tab
+    // TODO add verbose to schema
+    // TODO here we would either update documents context or verbose
+    if (isDocumentsTab) {
+      setCurrentDocuments({ documents });
+    }
+
+    // setSelectedTab('output');
     setExecuteOutput(output);
   };
 
   const { form } = useForm({
     schema: pipelineTestSchema,
     defaultValue: {
-      documents: initialDocuments,
+      documents: currentDocuments?.documents || '',
     },
     onSubmit: executePipeline,
   });
 
-  let tabContent;
+  // Default to 'documents' tab
+  let tabContent = <Documents />;
 
   if (selectedTab === 'output') {
     tabContent = (
-      <EuiCodeBlock language="json" isCopyable>
-        {JSON.stringify(executeOutput, null, 2)}
-      </EuiCodeBlock>
-    );
-  } else {
-    // Default to 'documents' tab
-    tabContent = (
-      <>
-        {/* Execute error */}
-        {executeError ? (
-          <>
-            <SectionError
-              title={
-                <FormattedMessage
-                  id="xpack.ingestPipelines.testPipelineFlyout.executePipelineError"
-                  defaultMessage="Unable to execute pipeline"
-                />
-              }
-              error={executeError}
-              data-test-subj="executePipelineError"
-            />
-            <EuiSpacer size="m" />
-          </>
-        ) : null}
-
-        <EuiText>
-          <p>
-            <FormattedMessage
-              id="xpack.ingestPipelines.testPipelineFlyout.descriptionText"
-              defaultMessage="Provide an array of documents to be ingested by the pipeline."
-            />
-          </p>
-        </EuiText>
-
-        <EuiSpacer size="m" />
-
-        <Form form={form} data-test-subj="addDocumentsForm">
-          {/* Documents editor */}
-          <UseField
-            path="documents"
-            component={JsonEditorField}
-            componentProps={{
-              ['data-test-subj']: 'documentsField',
-              euiCodeEditorProps: {
-                height: '300px',
-                'aria-label': i18n.translate(
-                  'xpack.ingestPipelines.testPipelineFlyout.documentsFieldAriaLabel',
-                  {
-                    defaultMessage: 'Documents JSON editor',
-                  }
-                ),
-              },
-            }}
-          />
-        </Form>
-      </>
+      <Output
+        isVerboseEnabled={isVerboseEnabled}
+        setIsVerboseEnabled={setIsVerboseEnabled}
+        executeOutput={executeOutput}
+      />
     );
   }
 
   return (
-    <EuiFlyout maxWidth={480} onClose={closeFlyout}>
+    <EuiFlyout
+      maxWidth={480}
+      onClose={async () => {
+        // await updateDocumentsCache();
+        closeFlyout();
+      }}
+    >
       <EuiFlyoutHeader>
         <EuiTitle>
           <h2>
@@ -181,14 +148,36 @@ export const PipelineTestFlyout: React.FunctionComponent<Props> = ({
 
       <EuiFlyoutBody>
         <PipelineTestTabs
-          onTabChange={setSelectedTab}
+          onTabChange={async tab => {
+            // await updateDocumentsCache();
+            setSelectedTab(tab);
+          }}
           selectedTab={selectedTab}
           getIsDisabled={tabId => !executeOutput && tabId === 'output'}
         />
 
         <EuiSpacer />
 
-        {tabContent}
+        {/* Execute error */}
+        {executeError ? (
+          <>
+            <SectionError
+              title={
+                <FormattedMessage
+                  id="xpack.ingestPipelines.testPipelineFlyout.executePipelineError"
+                  defaultMessage="Unable to execute pipeline"
+                />
+              }
+              error={executeError}
+              data-test-subj="executePipelineError"
+            />
+            <EuiSpacer size="m" />
+          </>
+        ) : null}
+
+        <Form form={form} data-test-subj="testPipelineForm">
+          {tabContent}
+        </Form>
       </EuiFlyoutBody>
 
       <EuiFlyoutFooter>
