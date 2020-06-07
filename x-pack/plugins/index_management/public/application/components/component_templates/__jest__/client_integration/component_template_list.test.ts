@@ -114,7 +114,7 @@ describe('<ComponentTemplateList />', () => {
         confirmButton!.click();
       });
 
-      const latestRequest = server.requests[server.requests.length - 1];
+      const latestRequest = server.requests[server.requests.length - 2];
 
       expect(latestRequest.method).toBe('DELETE');
       expect(latestRequest.url).toBe(
