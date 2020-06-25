@@ -111,11 +111,12 @@ export const FormWizardProvider = WithMultiContent<Props<any>>(function FormWiza
 
   const navigateToStep = useCallback(
     async (stepId: number | string) => {
+      const currentStepIndex = getStepIndex(activeStepId);
       // Before navigating away we validate the active content in the DOM
       const isValid = await validate();
 
-      // If step is not valid do not go any further
-      if (!isValid) {
+      // If it is not the last step and the step is invalid, do not go any further
+      if (currentStepIndex !== lastStep && !isValid) {
         return;
       }
 
