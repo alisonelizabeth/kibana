@@ -15,8 +15,11 @@ export interface SerializeResult {
   on_failure?: Processor[];
 }
 
-const convertProcessorInternalToProcessor = (processor: ProcessorInternal): Processor => {
-  const { options, onFailure, type } = processor;
+const convertProcessorInternalToProcessor = (
+  processor: ProcessorInternal,
+  addTag?: boolean
+): Processor => {
+  const { options, onFailure, type, id } = processor;
   const outProcessor = {
     [type]: {
       ...options,
@@ -29,6 +32,11 @@ const convertProcessorInternalToProcessor = (processor: ProcessorInternal): Proc
     outProcessor[type].on_failure = [];
   }
 
+  // TODO fix
+  if (addTag) {
+    outProcessor[type].tag = id;
+  }
+
   return outProcessor;
 };
 
@@ -36,8 +44,9 @@ const convertProcessors = (processors: ProcessorInternal[]) => {
   const convertedProcessors = [];
 
   for (const processor of processors) {
-    convertedProcessors.push(convertProcessorInternalToProcessor(processor));
+    convertedProcessors.push(convertProcessorInternalToProcessor(processor, true)); // todo: temp; need some conditional logic to only add tag for simulation
   }
+
   return convertedProcessors;
 };
 

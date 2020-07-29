@@ -34,11 +34,6 @@ export const OutputTab: React.FunctionComponent<Props> = ({
   const { verbose: cachedVerbose, documents: cachedDocuments } = testConfig;
 
   const onEnableVerbose = (isVerboseEnabled: boolean) => {
-    setCurrentTestConfig({
-      ...testConfig,
-      verbose: isVerboseEnabled,
-    });
-
     handleExecute(cachedDocuments!, isVerboseEnabled);
   };
 

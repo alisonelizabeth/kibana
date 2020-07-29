@@ -43,12 +43,6 @@ export const DocumentsTab: React.FunctionComponent<Props> = ({ handleExecute, is
 
     const { documents } = formData as TestConfig;
 
-    // Update context
-    setCurrentTestConfig({
-      ...testConfig,
-      documents,
-    });
-
     handleExecute(documents!, cachedVerbose);
   };
 

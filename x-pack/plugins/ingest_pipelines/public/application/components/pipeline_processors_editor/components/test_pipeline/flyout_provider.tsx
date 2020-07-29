@@ -19,6 +19,7 @@ import {
 
 import { usePipelineProcessorsContext, useTestConfigContext } from '../../context';
 import { serialize } from '../../serialize';
+import { deserializeOutput } from '../../deserialize';
 
 import { Tabs, Tab, OutputTab, DocumentsTab } from './flyout_tabs';
 
@@ -35,7 +36,7 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
 
   const serializedProcessors = serialize(processors.state);
 
-  const { testConfig } = useTestConfigContext();
+  const { testConfig, setCurrentTestConfig } = useTestConfigContext();
   const { documents: cachedDocuments, verbose: cachedVerbose } = testConfig;
 
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false);
@@ -68,6 +69,12 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
 
       setExecuteOutput(output);
 
+      setCurrentTestConfig({
+        documents,
+        verbose: typeof verbose === 'boolean' ? verbose : false,
+        output: deserializeOutput(output),
+      });
+
       toasts.addSuccess(
         i18n.translate('xpack.ingestPipelines.testPipelineFlyout.successNotificationText', {
           defaultMessage: 'Pipeline executed',
@@ -79,7 +86,7 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
 
       setSelectedTab('output');
     },
-    [serializedProcessors, api, toasts]
+    [api, serializedProcessors, setCurrentTestConfig, toasts]
   );
 
   useEffect(() => {

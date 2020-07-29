@@ -7,7 +7,8 @@
 import React, { useState, useCallback, useContext } from 'react';
 
 export interface TestConfig {
-  documents?: object[] | undefined;
+  documents?: object[];
+  output?: any; // todo fix
   verbose: boolean;
 }
 

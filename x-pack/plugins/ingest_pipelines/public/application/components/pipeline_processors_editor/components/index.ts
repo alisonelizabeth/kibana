@@ -23,3 +23,5 @@ export { OnDoneLoadJsonHandler, LoadFromJsonButton } from './load_from_json';
 export { TestPipelineButton } from './test_pipeline';
 
 export { PipelineProcessorsItemTooltip, Position } from './pipeline_processors_editor_item_tooltip';
+
+export { ProcessorOutputFlyout } from './processor_output_flyout';

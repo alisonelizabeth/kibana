@@ -130,6 +130,24 @@ export const PipelineProcessorsEditorItem: FunctionComponent<Props> = memo(
             <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
               <EuiFlexItem grow={false}>{renderMoveButton()}</EuiFlexItem>
               <EuiFlexItem grow={false}>
+                {/* TODO temp */}
+                <EuiToolTip position="top" content={<p>Inactive</p>}>
+                  <EuiButtonIcon
+                    color="subdued"
+                    onClick={() => {
+                      editor.setMode({
+                        id: 'debuggingProcessor',
+                        arg: { processor, selector },
+                      });
+                    }}
+                    iconType="dot"
+                    size="s"
+                    aria-label="i18n TODO"
+                    // disabled={color === 'disabled' ? true : false}
+                  />
+                </EuiToolTip>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
                 <EuiText
                   className="pipelineProcessorsEditor__item__processorTypeLabel"
                   color={isDimmed ? 'subdued' : undefined}

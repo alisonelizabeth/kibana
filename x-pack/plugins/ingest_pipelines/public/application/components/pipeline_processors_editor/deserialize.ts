@@ -58,3 +58,23 @@ export const deserialize = ({ processors, onFailure }: DeserializeArgs): Deseria
     onFailure: onFailure ? convertProcessors(onFailure) : undefined,
   };
 };
+
+// This is only valid with verbose output
+export const deserializeOutput = (output) => {
+  const { docs } = output;
+
+  const deserializedOutput = docs.map((doc) => {
+    if (doc.processor_results) {
+      const mapToTag = doc.processor_results.reduce((acc, cur) => {
+        acc[cur?.tag] = cur;
+        return acc;
+      }, {});
+
+      return mapToTag;
+    }
+
+    return doc;
+  });
+
+  return deserializedOutput;
+};
