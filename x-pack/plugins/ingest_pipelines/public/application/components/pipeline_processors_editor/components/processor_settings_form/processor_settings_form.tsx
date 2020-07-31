@@ -29,12 +29,8 @@ import { CommonProcessorFields, ProcessorTypeField } from './processors/common_f
 import { Custom } from './processors/custom';
 
 export interface Props {
-  isOnFailure: boolean;
   processor?: ProcessorInternal;
   form: FormHook;
-  onClose: () => void;
-  onOpen: () => void;
-  esDocsBasePath: string;
 }
 
 const updateButtonLabel = i18n.translate(
@@ -51,107 +47,38 @@ const cancelButtonLabel = i18n.translate(
   { defaultMessage: 'Cancel' }
 );
 
-export const ProcessorSettingsForm: FunctionComponent<Props> = memo(
-  ({ processor, form, isOnFailure, onClose, onOpen, esDocsBasePath }) => {
-    const flyoutTitleContent = isOnFailure ? (
-      <FormattedMessage
-        id="xpack.ingestPipelines.settingsFormOnFailureFlyout.title"
-        defaultMessage="Configure on-failure processor"
-      />
-    ) : (
-      <FormattedMessage
-        id="xpack.ingestPipelines.settingsFormFlyout.title"
-        defaultMessage="Configure processor"
-      />
-    );
-
-    useEffect(
-      () => {
-        onOpen();
-      },
-      [] /* eslint-disable-line react-hooks/exhaustive-deps */
-    );
-
+// TODO rename file?
+export const ProcessorSettings: FunctionComponent<Props> = memo(
+  ({ processor, form }) => {
     return (
-      <Form data-test-subj="processorSettingsForm" form={form}>
-        <EuiFlyout size="m" maxWidth={720} onClose={onClose}>
-          <EuiFlyoutHeader>
-            <EuiFlexGroup gutterSize="xs">
-              <EuiFlexItem>
-                <div>
-                  <EuiTitle size="m">
-                    <h2>{flyoutTitleContent}</h2>
-                  </EuiTitle>
-                </div>
-              </EuiFlexItem>
+      <>
+        <ProcessorTypeField initialType={processor?.type} />
 
-              <EuiFlexItem grow={false}>
-                <FormDataProvider pathsToWatch="type">
-                  {({ type }) => {
-                    const formDescriptor = getProcessorFormDescriptor(type as any);
+        <EuiHorizontalRule />
 
-                    if (formDescriptor) {
-                      return (
-                        <DocumentationButton
-                          processorLabel={formDescriptor.label}
-                          docLink={esDocsBasePath + formDescriptor.docLinkPath}
-                        />
-                      );
-                    }
-                    return null;
-                  }}
-                </FormDataProvider>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlyoutHeader>
-          <EuiFlyoutBody>
-            <ProcessorTypeField initialType={processor?.type} />
+        <FormDataProvider pathsToWatch="type">
+          {(arg: any) => {
+            const { type } = arg;
 
-            <EuiHorizontalRule />
+            if (type?.length) {
+              const formDescriptor = getProcessorFormDescriptor(type as any);
 
-            <FormDataProvider pathsToWatch="type">
-              {(arg: any) => {
-                const { type } = arg;
+              if (formDescriptor?.FieldsComponent) {
+                return (
+                  <>
+                    <formDescriptor.FieldsComponent />
+                    <CommonProcessorFields />
+                  </>
+                );
+              }
+              return <Custom defaultOptions={processor?.options} />;
+            }
 
-                if (type?.length) {
-                  const formDescriptor = getProcessorFormDescriptor(type as any);
-
-                  if (formDescriptor?.FieldsComponent) {
-                    return (
-                      <>
-                        <formDescriptor.FieldsComponent />
-                        <CommonProcessorFields />
-                      </>
-                    );
-                  }
-                  return <Custom defaultOptions={processor?.options} />;
-                }
-
-                // If the user has not yet defined a type, we do not show any settings fields
-                return null;
-              }}
-            </FormDataProvider>
-          </EuiFlyoutBody>
-          <EuiFlyoutFooter>
-            <EuiFlexGroup justifyContent="flexEnd">
-              <EuiFlexItem grow={false}>
-                <EuiButtonEmpty onClick={onClose}>{cancelButtonLabel}</EuiButtonEmpty>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiButton
-                  fill
-                  data-test-subj="submitButton"
-                  onClick={() => {
-                    form.submit();
-                  }}
-                >
-                  {processor ? updateButtonLabel : addButtonLabel}
-                </EuiButton>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlyoutFooter>
-        </EuiFlyout>
-      </Form>
+            // If the user has not yet defined a type, we do not show any settings fields
+            return null;
+          }}
+        </FormDataProvider>
+      </>
     );
   },
   (previous, current) => {
