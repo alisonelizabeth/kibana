@@ -9,18 +9,23 @@ import { FormattedMessage } from '@kbn/i18n/react';
 import { i18n } from '@kbn/i18n';
 
 import {
+  EuiAccordion,
+  EuiBadge,
+  EuiButtonEmpty,
+  EuiCallOut,
   EuiCodeBlock,
   EuiFlyout,
   EuiFlyoutHeader,
   EuiFlyoutBody,
+  EuiIcon,
+  EuiText,
   EuiTitle,
+  EuiToolTip,
   EuiFlyoutFooter,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiButtonEmpty,
+  EuiPagination,
   EuiSpacer,
-  EuiCallOut,
-  EuiBadge,
 } from '@elastic/eui';
 import { useTestConfigContext } from '../context';
 
@@ -35,13 +40,14 @@ export const ProcessorOutputFlyout: React.FunctionComponent<Props> = ({ processo
 
   const { documents, output } = testConfig;
 
-  // TODO for now, only accounting for first doc
-  const processorInput = documents![0];
-  const processorOutput = output[0][processorId];
+  const [activePage, setActivePage] = useState(0);
 
-  console.log(testConfig);
+  const processorInput = documents![activePage];
+  const processorOutput = output[activePage][processorId];
 
-  console.log(processor);
+  console.log('testConfig', testConfig);
+  console.log('processor', processor);
+
   return (
     <EuiFlyout onClose={onClose} maxWidth={550} data-test-subj="processorOutputFlyout">
       <EuiFlyoutHeader>
@@ -58,19 +64,54 @@ export const ProcessorOutputFlyout: React.FunctionComponent<Props> = ({ processo
       </EuiFlyoutHeader>
 
       <EuiFlyoutBody data-test-subj="content">
+        {documents.length > 1 && (
+          <>
+            <EuiPagination
+              pageCount={documents.length - 1}
+              activePage={activePage}
+              onPageClick={(page) => setActivePage(page)}
+              compressed
+            />
+            <EuiSpacer />
+          </>
+        )}
         {/* TODO i18n */}
-        <p>Processor input</p>
+        <p>Ingest document</p>
         <EuiCodeBlock paddingSize="s" language="json" isCopyable>
           {JSON.stringify(processorInput, null, 2)}
         </EuiCodeBlock>
 
-        <EuiSpacer />
+        {processorOutput?.doc && (
+          <>
+            <EuiSpacer />
+            {/* TODO i18n */}
+            <p>Processor output</p>
+            <EuiCodeBlock paddingSize="s" language="json" isCopyable>
+              {JSON.stringify(processorOutput.doc, null, 2)}
+            </EuiCodeBlock>
+          </>
+        )}
 
-        {/* TODO i18n */}
-        <p>Processor output</p>
-        <EuiCodeBlock paddingSize="s" language="json" isCopyable>
-          {JSON.stringify(processorOutput, null, 2)}
-        </EuiCodeBlock>
+        {processorOutput?.ignored_error && (
+          <>
+            <EuiSpacer />
+            <EuiAccordion
+              id="accordion1"
+              buttonContent={
+                <EuiText>
+                  <p>View ignored error</p>
+                </EuiText>
+              }
+            >
+              <>
+                <EuiSpacer />
+                <EuiCodeBlock paddingSize="s" language="json" isCopyable>
+                  {JSON.stringify(processorOutput.ignored_error, null, 2)}
+                </EuiCodeBlock>
+              </>
+            </EuiAccordion>
+          </>
+        )}
       </EuiFlyoutBody>
     </EuiFlyout>
   );

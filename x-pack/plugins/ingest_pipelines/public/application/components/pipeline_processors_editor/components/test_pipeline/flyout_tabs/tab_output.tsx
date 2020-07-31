@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
 import {
   EuiCodeBlock,
@@ -17,7 +17,7 @@ import {
   EuiFlexItem,
 } from '@elastic/eui';
 
-import { useTestConfigContext } from '../../../context';
+import { useTestConfigContext, usePipelineProcessorsContext } from '../../../context';
 
 interface Props {
   executeOutput?: { docs: object[] };
@@ -31,10 +31,25 @@ export const OutputTab: React.FunctionComponent<Props> = ({
   isExecuting,
 }) => {
   const { setCurrentTestConfig, testConfig } = useTestConfigContext();
-  const { verbose: cachedVerbose, documents: cachedDocuments } = testConfig;
+  const { documents: cachedDocuments } = testConfig;
 
-  const onEnableVerbose = (isVerboseEnabled: boolean) => {
-    handleExecute(cachedDocuments!, isVerboseEnabled);
+  const { links, toasts } = usePipelineProcessorsContext();
+
+  const [isVerboseEnabled, setIsVerboseEnabled] = useState(false);
+
+  const onEnableVerbose = async (isVerbose: boolean) => {
+    setIsVerboseEnabled(isVerbose);
+
+    await handleExecute(cachedDocuments!, isVerbose);
+
+    toasts.addSuccess(
+      i18n.translate('xpack.ingestPipelines.testPipelineFlyout.successNotificationText', {
+        defaultMessage: 'Pipeline executed',
+      }),
+      {
+        toastLifeTimeMs: 1000,
+      }
+    );
   };
 
   let content: React.ReactNode | undefined;
@@ -71,14 +86,14 @@ export const OutputTab: React.FunctionComponent<Props> = ({
                 defaultMessage="View verbose output"
               />
             }
-            checked={cachedVerbose}
+            checked={isVerboseEnabled}
             onChange={(e) => onEnableVerbose(e.target.checked)}
           />
         </EuiFlexItem>
         <EuiFlexItem grow={false}>
           <EuiButton
             size="s"
-            onClick={() => handleExecute(cachedDocuments!, cachedVerbose)}
+            onClick={() => handleExecute(cachedDocuments!, isVerboseEnabled)}
             iconType="refresh"
           >
             <FormattedMessage

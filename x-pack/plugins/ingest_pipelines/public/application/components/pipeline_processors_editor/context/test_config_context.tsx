@@ -9,7 +9,7 @@ import React, { useState, useCallback, useContext } from 'react';
 export interface TestConfig {
   documents?: object[];
   output?: any; // todo fix
-  verbose: boolean;
+  // verbose: boolean;
 }
 
 interface TestConfigContext {
@@ -19,7 +19,7 @@ interface TestConfigContext {
 
 const TEST_CONFIG_DEFAULT_VALUE = {
   testConfig: {
-    verbose: false,
+    // verbose: false,
   },
   setCurrentTestConfig: () => {},
 };
@@ -38,7 +38,7 @@ export const useTestConfigContext = () => {
 
 export const TestConfigContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [testConfig, setTestConfig] = useState<TestConfig>({
-    verbose: false,
+    // verbose: false,
   });
 
   const setCurrentTestConfig = useCallback((currentTestConfig: TestConfig): void => {

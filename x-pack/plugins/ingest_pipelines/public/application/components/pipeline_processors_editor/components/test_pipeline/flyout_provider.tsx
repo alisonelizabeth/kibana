@@ -37,7 +37,7 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
   const serializedProcessors = serialize(processors.state);
 
   const { testConfig, setCurrentTestConfig } = useTestConfigContext();
-  const { documents: cachedDocuments, verbose: cachedVerbose } = testConfig;
+  const { documents: cachedDocuments } = testConfig;
 
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false);
 
@@ -50,7 +50,7 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
   const [executeOutput, setExecuteOutput] = useState<any>(undefined);
 
   const handleExecute = useCallback(
-    async (documents: object[], verbose?: boolean) => {
+    async (documents: object[], verbose?: boolean, getProcessorsOutputToCache?: boolean) => {
       setIsExecuting(true);
       setExecuteError(null);
 
@@ -67,26 +67,18 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
         return;
       }
 
-      setExecuteOutput(output);
+      setExecuteOutput(output); // todo not necessary anymore? store in context?
 
-      setCurrentTestConfig({
-        documents,
-        verbose: typeof verbose === 'boolean' ? verbose : false,
-        output: deserializeOutput(output),
-      });
-
-      toasts.addSuccess(
-        i18n.translate('xpack.ingestPipelines.testPipelineFlyout.successNotificationText', {
-          defaultMessage: 'Pipeline executed',
-        }),
-        {
-          toastLifeTimeMs: 1000,
-        }
-      );
-
-      setSelectedTab('output');
+      // need to verify if this is valid logic - need to make sure we always store docs
+      if (verbose) {
+        setCurrentTestConfig({
+          documents,
+          // rename to processorsOutput
+          output: deserializeOutput(output),
+        });
+      }
     },
-    [api, serializedProcessors, setCurrentTestConfig, toasts]
+    [api, serializedProcessors, setCurrentTestConfig]
   );
 
   useEffect(() => {
@@ -100,9 +92,9 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
     // use the cached test config and automatically execute the pipeline
     if (isFlyoutVisible && shouldExecuteImmediately && cachedDocuments) {
       setShouldExecuteImmediately(false);
-      handleExecute(cachedDocuments!, cachedVerbose);
+      handleExecute(cachedDocuments!);
     }
-  }, [handleExecute, cachedDocuments, cachedVerbose, isFlyoutVisible, shouldExecuteImmediately]);
+  }, [handleExecute, cachedDocuments, isFlyoutVisible, shouldExecuteImmediately]);
 
   let tabContent;
 
@@ -116,7 +108,13 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
     );
   } else {
     // default to "Documents" tab
-    tabContent = <DocumentsTab isExecuting={isExecuting} handleExecute={handleExecute} />;
+    tabContent = (
+      <DocumentsTab
+        isExecuting={isExecuting}
+        handleExecute={handleExecute}
+        setSelectedTab={setSelectedTab}
+      />
+    );
   }
 
   return (
