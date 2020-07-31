@@ -34,11 +34,7 @@ interface Props {
   isExecuting: boolean;
 }
 
-export const DocumentsTab: React.FunctionComponent<Props> = ({
-  handleExecute,
-  isExecuting,
-  setSelectedTab,
-}) => {
+export const DocumentsTab: React.FunctionComponent<Props> = ({ handleExecute, isExecuting }) => {
   const { links, toasts } = usePipelineProcessorsContext();
 
   const { setCurrentTestPipelineData, testPipelineData } = useTestPipelineContext();
@@ -51,22 +47,7 @@ export const DocumentsTab: React.FunctionComponent<Props> = ({
 
     const { documents } = formData as TestPipelineData;
 
-    await handleExecute(documents!);
-
-    // TODO what happens when the request fails?
-    toasts.addSuccess(
-      i18n.translate('xpack.ingestPipelines.testPipelineFlyout.successNotificationText', {
-        defaultMessage: 'Pipeline executed',
-      }),
-      {
-        toastLifeTimeMs: 1000,
-      }
-    );
-
-    setSelectedTab('output');
-
-    // we need to re-execute the pipeline with verbose enabled so we can cache the per-processor results
-    await handleExecute(documents!, true);
+    await handleExecute({ documents: documents! }, true);
   };
 
   const { form } = useForm({

@@ -59,22 +59,40 @@ export const deserialize = ({ processors, onFailure }: DeserializeArgs): Deseria
   };
 };
 
-// This is only valid with verbose output
-export const deserializeOutput = (output) => {
+/**
+ * This function takes the verbose response of the simulate API
+ * and maps the results to each processor in the pipeline by the "tag" field
+ */
+export const deserializeVerboseTestOutput = (output) => {
   const { docs } = output;
 
-  const deserializedOutput = docs.map((doc) => {
+  const deserializedTestOutput = docs.map((doc) => {
     if (doc.processor_results) {
-      const mapToTag = doc.processor_results.reduce((acc, cur) => {
-        acc[cur?.tag] = cur;
+      const processorResultsById = doc.processor_results.reduce((acc, cur, index) => {
+        const resultId = cur.tag;
+
+        // TODO store this under _kbnMeta?
+        if (index !== 0) {
+          // Add the result from the previous processor so that the user
+          // can easily compare current output to the previous output
+          cur.prevProcessorResult = doc.processor_results[index - 1];
+        }
+
+        // The tag is added programatically as a way to map
+        // the results to each processor
+        // It is not something we need to surface to the user, so we delete it
+        delete cur.tag;
+
+        acc[resultId] = cur;
+
         return acc;
       }, {});
 
-      return mapToTag;
+      return processorResultsById;
     }
 
     return doc;
   });
 
-  return deserializedOutput;
+  return deserializedTestOutput;
 };

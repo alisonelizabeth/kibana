@@ -8,9 +8,8 @@ import React, { useState, useCallback, useContext } from 'react';
 
 export interface TestPipelineData {
   documents?: object[];
-  output?: any; // todo fix TS
-  // todo this is not being used yet
-  verboseOutput?: any; // todo fix TS
+  results?: any; // todo fix TS
+  resultsByProcessor?: any; // todo fix TS
 }
 
 interface TestPipelineContext {

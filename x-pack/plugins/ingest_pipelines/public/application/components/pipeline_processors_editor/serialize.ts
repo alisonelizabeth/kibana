@@ -32,7 +32,8 @@ const convertProcessorInternalToProcessor = (
     outProcessor[type].on_failure = [];
   }
 
-  // TODO fix
+  // For simulation, we add the "tag" field equal to the internal processor id
+  // so that we can map the simulate results to each processor
   if (addTag) {
     outProcessor[type].tag = id;
   }
@@ -40,19 +41,22 @@ const convertProcessorInternalToProcessor = (
   return outProcessor;
 };
 
-const convertProcessors = (processors: ProcessorInternal[]) => {
+const convertProcessors = (processors: ProcessorInternal[], addTag?: boolean) => {
   const convertedProcessors = [];
 
   for (const processor of processors) {
-    convertedProcessors.push(convertProcessorInternalToProcessor(processor, true)); // todo: temp; need some conditional logic to only add tag for simulation
+    convertedProcessors.push(convertProcessorInternalToProcessor(processor, addTag));
   }
 
   return convertedProcessors;
 };
 
-export const serialize = ({ processors, onFailure }: SerializeArgs): SerializeResult => {
+export const serialize = (
+  { processors, onFailure }: SerializeArgs,
+  addTag?: boolean
+): SerializeResult => {
   return {
-    processors: convertProcessors(processors),
-    on_failure: onFailure?.length ? convertProcessors(onFailure) : undefined,
+    processors: convertProcessors(processors, addTag),
+    on_failure: onFailure?.length ? convertProcessors(onFailure, addTag) : undefined,
   };
 };

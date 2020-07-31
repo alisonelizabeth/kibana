@@ -32,7 +32,7 @@ export const OutputTab: React.FunctionComponent<Props> = ({
   isExecuting,
 }) => {
   const { setCurrentTestPipelineData, testPipelineData } = useTestPipelineContext();
-  const { documents: cachedDocuments } = testPipelineData;
+  const { documents: cachedDocuments, results } = testPipelineData;
 
   const { links, toasts } = usePipelineProcessorsContext();
 
@@ -41,27 +41,17 @@ export const OutputTab: React.FunctionComponent<Props> = ({
   const onEnableVerbose = async (isVerbose: boolean) => {
     setIsVerboseEnabled(isVerbose);
 
-    await handleExecute(cachedDocuments!, isVerbose);
-
-    // TODO what happens when the request fails?
-    toasts.addSuccess(
-      i18n.translate('xpack.ingestPipelines.testPipelineFlyout.successNotificationText', {
-        defaultMessage: 'Pipeline executed',
-      }),
-      {
-        toastLifeTimeMs: 1000,
-      }
-    );
+    await handleExecute({ documents: cachedDocuments!, verbose: isVerbose });
   };
 
   let content: React.ReactNode | undefined;
 
   if (isExecuting) {
     content = <EuiLoadingSpinner size="m" />;
-  } else if (executeOutput) {
+  } else if (results) {
     content = (
       <EuiCodeBlock language="json" isCopyable>
-        {JSON.stringify(executeOutput, null, 2)}
+        {JSON.stringify(results, null, 2)}
       </EuiCodeBlock>
     );
   }
@@ -95,7 +85,9 @@ export const OutputTab: React.FunctionComponent<Props> = ({
         <EuiFlexItem grow={false}>
           <EuiButton
             size="s"
-            onClick={() => handleExecute(cachedDocuments!, isVerboseEnabled)}
+            onClick={() =>
+              handleExecute({ documents: cachedDocuments!, verbose: isVerboseEnabled })
+            }
             iconType="refresh"
           >
             <FormattedMessage

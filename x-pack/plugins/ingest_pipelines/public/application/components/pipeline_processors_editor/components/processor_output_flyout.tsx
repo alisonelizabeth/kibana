@@ -38,15 +38,12 @@ export const ProcessorOutputFlyout: React.FunctionComponent<Props> = ({ processo
   const { testPipelineData } = useTestPipelineContext();
   const { type: processorType, id: processorId } = processor;
 
-  const { documents, output } = testPipelineData;
+  const { resultsByProcessor, documents } = testPipelineData;
 
   const [activePage, setActivePage] = useState(0);
 
-  const processorInput = documents![activePage];
-  const processorOutput = output[activePage][processorId];
-
-  console.log('test pipeline data', testPipelineData);
-  console.log('processor', processor);
+  const processorOutput = resultsByProcessor[activePage][processorId];
+  const { prevProcessorResult, doc: currentResult, ignored_error: ignoredError } = processorOutput;
 
   return (
     <EuiFlyout onClose={onClose} maxWidth={550} data-test-subj="processorOutputFlyout">
@@ -75,30 +72,36 @@ export const ProcessorOutputFlyout: React.FunctionComponent<Props> = ({ processo
             <EuiSpacer />
           </>
         )}
-        {/* TODO i18n */}
-        <p>Ingest document</p>
-        <EuiCodeBlock paddingSize="s" language="json" isCopyable>
-          {JSON.stringify(processorInput, null, 2)}
-        </EuiCodeBlock>
 
-        {processorOutput?.doc && (
+        {prevProcessorResult?.doc && (
           <>
+            {/* TODO i18n */}
+            <p>Previous processor output</p>
+            <EuiCodeBlock paddingSize="s" language="json" isCopyable>
+              {JSON.stringify(prevProcessorResult.doc, null, 2)}
+            </EuiCodeBlock>
             <EuiSpacer />
+          </>
+        )}
+
+        {currentResult && (
+          <>
             {/* TODO i18n */}
             <p>Processor output</p>
             <EuiCodeBlock paddingSize="s" language="json" isCopyable>
-              {JSON.stringify(processorOutput.doc, null, 2)}
+              {JSON.stringify(currentResult, null, 2)}
             </EuiCodeBlock>
           </>
         )}
 
-        {processorOutput?.ignored_error && (
+        {ignoredError && (
           <>
             <EuiSpacer />
             <EuiAccordion
-              id="accordion1"
+              id="ignored_error_accordion"
               buttonContent={
                 <EuiText>
+                  {/* TODO i18n */}
                   <p>View ignored error</p>
                 </EuiText>
               }
@@ -106,7 +109,7 @@ export const ProcessorOutputFlyout: React.FunctionComponent<Props> = ({ processo
               <>
                 <EuiSpacer />
                 <EuiCodeBlock paddingSize="s" language="json" isCopyable>
-                  {JSON.stringify(processorOutput.ignored_error, null, 2)}
+                  {JSON.stringify(ignoredError, null, 2)}
                 </EuiCodeBlock>
               </>
             </EuiAccordion>

@@ -19,7 +19,7 @@ import {
 
 import { usePipelineProcessorsContext, useTestPipelineContext } from '../../context';
 import { serialize } from '../../serialize';
-import { deserializeOutput } from '../../deserialize';
+import { deserializeVerboseTestOutput } from '../../deserialize';
 
 import { Tabs, Tab, OutputTab, DocumentsTab } from './flyout_tabs';
 
@@ -34,27 +34,28 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
     toasts,
   } = usePipelineProcessorsContext();
 
-  const serializedProcessors = serialize(processors.state);
-
   const { testPipelineData, setCurrentTestPipelineData } = useTestPipelineContext();
   const { documents: cachedDocuments } = testPipelineData;
 
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false);
 
-  const initialSelectedTab = cachedDocuments ? 'output' : 'documents';
-  const [selectedTab, setSelectedTab] = useState<Tab>(initialSelectedTab);
+  const [selectedTab, setSelectedTab] = useState<Tab>('documents');
 
-  const [shouldExecuteImmediately, setShouldExecuteImmediately] = useState<boolean>(false);
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [executeError, setExecuteError] = useState<any>(null);
   const [executeOutput, setExecuteOutput] = useState<any>(undefined);
 
   const handleExecute = useCallback(
-    async (documents: object[], verbose?: boolean, getProcessorsOutputToCache?: boolean) => {
+    async (
+      { documents, verbose }: { documents: object[]; verbose?: boolean },
+      fetchPerProcessorResults?: boolean
+    ) => {
+      const serializedProcessors = serialize(processors.state);
+
       setIsExecuting(true);
       setExecuteError(null);
 
-      const { error, data: output } = await api.simulatePipeline({
+      const { error, data: results } = await api.simulatePipeline({
         documents,
         verbose,
         pipeline: { ...serializedProcessors },
@@ -67,34 +68,44 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
         return;
       }
 
-      setExecuteOutput(output); // todo not necessary anymore? store in context?
+      // TODO handle error case here
+      if (fetchPerProcessorResults) {
+        // TODO does it make sense to call serialization twice?
+        const serializedProcessorsWithTag = serialize(processors.state, true);
 
-      // need to verify if this is valid logic - need to make sure we always store docs
-      if (verbose) {
+        // Call the simulate API again with verbose enabled so we can cache the per processor results
+        const { data: verboseResults } = await api.simulatePipeline({
+          documents,
+          verbose: true,
+          pipeline: { ...serializedProcessorsWithTag },
+        });
+
         setCurrentTestPipelineData({
           documents,
-          // rename to processorsOutput
-          output: deserializeOutput(output),
+          results,
+          resultsByProcessor: deserializeVerboseTestOutput(verboseResults),
+        });
+      } else {
+        // TODO fix: this is going to be reset resultsByProcessor when verbose flag is toggled
+        setCurrentTestPipelineData({
+          documents,
+          results,
         });
       }
+
+      toasts.addSuccess(
+        i18n.translate('xpack.ingestPipelines.testPipelineFlyout.successNotificationText', {
+          defaultMessage: 'Pipeline executed',
+        }),
+        {
+          toastLifeTimeMs: 1000,
+        }
+      );
+
+      setSelectedTab('output');
     },
-    [api, serializedProcessors, setCurrentTestPipelineData]
+    [api, processors.state, setCurrentTestPipelineData, toasts]
   );
-
-  useEffect(() => {
-    if (isFlyoutVisible === false && cachedDocuments) {
-      setShouldExecuteImmediately(true);
-    }
-  }, [isFlyoutVisible, cachedDocuments]);
-
-  useEffect(() => {
-    // If the user has already tested the pipeline once,
-    // use the cached test config and automatically execute the pipeline
-    if (isFlyoutVisible && shouldExecuteImmediately && cachedDocuments) {
-      setShouldExecuteImmediately(false);
-      handleExecute(cachedDocuments!);
-    }
-  }, [handleExecute, cachedDocuments, isFlyoutVisible, shouldExecuteImmediately]);
 
   let tabContent;
 
@@ -108,13 +119,7 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
     );
   } else {
     // default to "Documents" tab
-    tabContent = (
-      <DocumentsTab
-        isExecuting={isExecuting}
-        handleExecute={handleExecute}
-        setSelectedTab={setSelectedTab}
-      />
-    );
+    tabContent = <DocumentsTab isExecuting={isExecuting} handleExecute={handleExecute} />;
   }
 
   return (
