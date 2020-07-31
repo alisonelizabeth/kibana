@@ -19,7 +19,11 @@ import {
   FormConfig,
 } from '../../../../../../shared_imports';
 
-import { usePipelineProcessorsContext, useTestConfigContext, TestConfig } from '../../../context';
+import {
+  usePipelineProcessorsContext,
+  useTestPipelineContext,
+  TestPipelineData,
+} from '../../../context';
 
 import { documentsSchema } from './schema';
 
@@ -37,18 +41,19 @@ export const DocumentsTab: React.FunctionComponent<Props> = ({
 }) => {
   const { links, toasts } = usePipelineProcessorsContext();
 
-  const { setCurrentTestConfig, testConfig } = useTestConfigContext();
-  const { documents: cachedDocuments } = testConfig;
+  const { setCurrentTestPipelineData, testPipelineData } = useTestPipelineContext();
+  const { documents: cachedDocuments } = testPipelineData;
 
   const executePipeline: FormConfig['onSubmit'] = async (formData, isValid) => {
     if (!isValid) {
       return;
     }
 
-    const { documents } = formData as TestConfig;
+    const { documents } = formData as TestPipelineData;
 
     await handleExecute(documents!);
 
+    // TODO what happens when the request fails?
     toasts.addSuccess(
       i18n.translate('xpack.ingestPipelines.testPipelineFlyout.successNotificationText', {
         defaultMessage: 'Pipeline executed',
@@ -60,6 +65,7 @@ export const DocumentsTab: React.FunctionComponent<Props> = ({
 
     setSelectedTab('output');
 
+    // we need to re-execute the pipeline with verbose enabled so we can cache the per-processor results
     await handleExecute(documents!, true);
   };
 

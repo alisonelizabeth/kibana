@@ -27,7 +27,7 @@ import {
   EuiPagination,
   EuiSpacer,
 } from '@elastic/eui';
-import { useTestConfigContext } from '../context';
+import { useTestPipelineContext } from '../context';
 
 export interface Props {
   processor: any;
@@ -35,17 +35,17 @@ export interface Props {
 }
 
 export const ProcessorOutputFlyout: React.FunctionComponent<Props> = ({ processor, onClose }) => {
-  const { testConfig } = useTestConfigContext();
+  const { testPipelineData } = useTestPipelineContext();
   const { type: processorType, id: processorId } = processor;
 
-  const { documents, output } = testConfig;
+  const { documents, output } = testPipelineData;
 
   const [activePage, setActivePage] = useState(0);
 
   const processorInput = documents![activePage];
   const processorOutput = output[activePage][processorId];
 
-  console.log('testConfig', testConfig);
+  console.log('test pipeline data', testPipelineData);
   console.log('processor', processor);
 
   return (

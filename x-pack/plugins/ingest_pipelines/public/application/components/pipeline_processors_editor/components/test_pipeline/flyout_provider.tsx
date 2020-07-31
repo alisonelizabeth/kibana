@@ -17,7 +17,7 @@ import {
   EuiCallOut,
 } from '@elastic/eui';
 
-import { usePipelineProcessorsContext, useTestConfigContext } from '../../context';
+import { usePipelineProcessorsContext, useTestPipelineContext } from '../../context';
 import { serialize } from '../../serialize';
 import { deserializeOutput } from '../../deserialize';
 
@@ -36,8 +36,8 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
 
   const serializedProcessors = serialize(processors.state);
 
-  const { testConfig, setCurrentTestConfig } = useTestConfigContext();
-  const { documents: cachedDocuments } = testConfig;
+  const { testPipelineData, setCurrentTestPipelineData } = useTestPipelineContext();
+  const { documents: cachedDocuments } = testPipelineData;
 
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false);
 
@@ -71,14 +71,14 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
 
       // need to verify if this is valid logic - need to make sure we always store docs
       if (verbose) {
-        setCurrentTestConfig({
+        setCurrentTestPipelineData({
           documents,
           // rename to processorsOutput
           output: deserializeOutput(output),
         });
       }
     },
-    [api, serializedProcessors, setCurrentTestConfig]
+    [api, serializedProcessors, setCurrentTestPipelineData]
   );
 
   useEffect(() => {

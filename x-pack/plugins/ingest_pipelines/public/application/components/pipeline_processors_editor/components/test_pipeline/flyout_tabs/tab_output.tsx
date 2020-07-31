@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
+import { i18n } from '@kbn/i18n';
 import {
   EuiCodeBlock,
   EuiSpacer,
@@ -17,7 +18,7 @@ import {
   EuiFlexItem,
 } from '@elastic/eui';
 
-import { useTestConfigContext, usePipelineProcessorsContext } from '../../../context';
+import { useTestPipelineContext, usePipelineProcessorsContext } from '../../../context';
 
 interface Props {
   executeOutput?: { docs: object[] };
@@ -30,8 +31,8 @@ export const OutputTab: React.FunctionComponent<Props> = ({
   handleExecute,
   isExecuting,
 }) => {
-  const { setCurrentTestConfig, testConfig } = useTestConfigContext();
-  const { documents: cachedDocuments } = testConfig;
+  const { setCurrentTestPipelineData, testPipelineData } = useTestPipelineContext();
+  const { documents: cachedDocuments } = testPipelineData;
 
   const { links, toasts } = usePipelineProcessorsContext();
 
@@ -42,6 +43,7 @@ export const OutputTab: React.FunctionComponent<Props> = ({
 
     await handleExecute(cachedDocuments!, isVerbose);
 
+    // TODO what happens when the request fails?
     toasts.addSuccess(
       i18n.translate('xpack.ingestPipelines.testPipelineFlyout.successNotificationText', {
         defaultMessage: 'Pipeline executed',
