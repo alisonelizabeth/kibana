@@ -9,7 +9,8 @@ import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { useForm, OnFormUpdateArg, FormData } from '../../../../../shared_imports';
 import { ProcessorInternal } from '../../types';
 
-import { ProcessorSettingsForm as ViewComponent } from './processor_settings_form';
+// import { ProcessorSettingsForm as ViewComponent } from './processor_settings_form';
+import { ManageProcessorFlyout as ViewComponent } from './manage_processor_flyout';
 import { usePipelineProcessorsContext } from '../../context';
 
 export type ProcessorSettingsFromOnSubmitArg = Omit<ProcessorInternal, 'id'>;
@@ -27,6 +28,7 @@ interface Props {
   processor?: ProcessorInternal;
 }
 
+// TODO rename?
 export const ProcessorSettingsForm: FunctionComponent<Props> = ({
   processor,
   onFormUpdate,

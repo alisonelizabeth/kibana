@@ -174,9 +174,10 @@ export const PipelineProcessorsEditorItem: FunctionComponent<Props> = memo(
                       data-test-subj="editItemButton"
                       disabled={isEditorNotInIdleMode}
                       aria-label={i18nTexts.editButtonLabel}
-                      iconType="pencil"
+                      iconType="arrowRight"
                       size="s"
                       onClick={() => {
+                        // TODO change mode from "editingProcessor" to "managingProcessor"?
                         editor.setMode({
                           id: 'editingProcessor',
                           arg: { processor, selector },
