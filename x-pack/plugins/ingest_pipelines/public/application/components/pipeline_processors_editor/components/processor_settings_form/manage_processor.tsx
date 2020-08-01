@@ -6,15 +6,17 @@
 
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
-import React, { FunctionComponent, memo, useEffect } from 'react';
+import React, { FunctionComponent, memo, useEffect, useState } from 'react';
 import {
   EuiButton,
   EuiButtonEmpty,
-  EuiHorizontalRule,
   EuiFlyout,
   EuiFlyoutHeader,
   EuiFlyoutBody,
   EuiFlyoutFooter,
+  EuiSpacer,
+  EuiTabs,
+  EuiTab,
   EuiTitle,
   EuiFlexGroup,
   EuiFlexItem,
@@ -23,10 +25,10 @@ import {
 import { Form, FormDataProvider, FormHook } from '../../../../../shared_imports';
 import { ProcessorInternal } from '../../types';
 
-import { DocumentationButton } from './documentation_button';
 import { getProcessorFormDescriptor } from './map_processor_type_to_form';
-import { CommonProcessorFields, ProcessorTypeField } from './processors/common_fields';
-import { Custom } from './processors/custom';
+
+import { ProcessorSettingsFields } from './processor_settings_fields';
+import { DocumentationButton } from './documentation_button';
 
 export interface Props {
   isOnFailure: boolean;
@@ -37,33 +39,50 @@ export interface Props {
   esDocsBasePath: string;
 }
 
-const updateButtonLabel = i18n.translate(
-  'xpack.ingestPipelines.settingsFormOnFailureFlyout.updateButtonLabel',
-  { defaultMessage: 'Update' }
-);
-const addButtonLabel = i18n.translate(
-  'xpack.ingestPipelines.settingsFormOnFailureFlyout.addButtonLabel',
-  { defaultMessage: 'Add' }
-);
+const i18nTexts = {
+  updateButtonLabel: i18n.translate(
+    'xpack.ingestPipelines.manageProcessorFlyout.updateButtonLabel',
+    { defaultMessage: 'Update' }
+  ),
+  cancelButtonLabel: i18n.translate(
+    'xpack.ingestPipelines.manageProcessorFlyout.cancelButtonLabel',
+    { defaultMessage: 'Cancel' }
+  ),
+};
 
-const cancelButtonLabel = i18n.translate(
-  'xpack.ingestPipelines.settingsFormOnFailureFlyout.cancelButtonLabel',
-  { defaultMessage: 'Cancel' }
-);
+export type TabType = 'configuration' | 'output';
 
-// TODO: NOT IN USE
-// Placeholder to support creation flow (no tabs)
-export const ProcessorSettingsForm: FunctionComponent<Props> = memo(
+interface Tab {
+  id: TabType;
+  name: string;
+}
+
+const tabs: Tab[] = [
+  {
+    id: 'configuration',
+    name: i18n.translate('xpack.ingestPipelines.manageProcessorFlyout.configurationTabTitle', {
+      defaultMessage: 'Configuration',
+    }),
+  },
+  {
+    id: 'output',
+    name: i18n.translate('xpack.ingestPipelines.manageProcessorFlyout.outputTabTitle', {
+      defaultMessage: 'Output',
+    }),
+  },
+];
+
+export const ManageProcessorFlyout: FunctionComponent<Props> = memo(
   ({ processor, form, isOnFailure, onClose, onOpen, esDocsBasePath }) => {
     const flyoutTitleContent = isOnFailure ? (
       <FormattedMessage
-        id="xpack.ingestPipelines.settingsFormOnFailureFlyout.title"
-        defaultMessage="Configure on-failure processor"
+        id="xpack.ingestPipelines.manageProcessorFlyout.onFailureTitle"
+        defaultMessage="Manage on-failure processor"
       />
     ) : (
       <FormattedMessage
-        id="xpack.ingestPipelines.settingsFormFlyout.title"
-        defaultMessage="Configure processor"
+        id="xpack.ingestPipelines.manageProcessorFlyout.title"
+        defaultMessage="Manage processor"
       />
     );
 
@@ -73,6 +92,16 @@ export const ProcessorSettingsForm: FunctionComponent<Props> = memo(
       },
       [] /* eslint-disable-line react-hooks/exhaustive-deps */
     );
+
+    const [activeTab, setActiveTab] = useState<TabType>('configuration');
+
+    let flyoutContent: React.ReactNode;
+
+    if (activeTab === 'output') {
+      flyoutContent = <div>TODO: output tab</div>;
+    } else {
+      flyoutContent = <ProcessorSettingsFields processor={processor} />;
+    }
 
     return (
       <Form data-test-subj="processorSettingsForm" form={form}>
@@ -86,7 +115,6 @@ export const ProcessorSettingsForm: FunctionComponent<Props> = memo(
                   </EuiTitle>
                 </div>
               </EuiFlexItem>
-
               <EuiFlexItem grow={false}>
                 <FormDataProvider pathsToWatch="type">
                   {({ type }) => {
@@ -107,47 +135,33 @@ export const ProcessorSettingsForm: FunctionComponent<Props> = memo(
             </EuiFlexGroup>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
-            <ProcessorTypeField initialType={processor?.type} />
+            <EuiTabs>
+              {tabs.map((tab) => (
+                <EuiTab
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                  }}
+                  isSelected={tab.id === activeTab}
+                  key={tab.id}
+                  data-test-subj={`${tab.id}Tab`}
+                >
+                  {tab.name}
+                </EuiTab>
+              ))}
+            </EuiTabs>
 
-            <EuiHorizontalRule />
+            <EuiSpacer />
 
-            <FormDataProvider pathsToWatch="type">
-              {(arg: any) => {
-                const { type } = arg;
-
-                if (type?.length) {
-                  const formDescriptor = getProcessorFormDescriptor(type as any);
-
-                  if (formDescriptor?.FieldsComponent) {
-                    return (
-                      <>
-                        <formDescriptor.FieldsComponent />
-                        <CommonProcessorFields />
-                      </>
-                    );
-                  }
-                  return <Custom defaultOptions={processor?.options} />;
-                }
-
-                // If the user has not yet defined a type, we do not show any settings fields
-                return null;
-              }}
-            </FormDataProvider>
+            {flyoutContent}
           </EuiFlyoutBody>
           <EuiFlyoutFooter>
             <EuiFlexGroup justifyContent="flexEnd">
               <EuiFlexItem grow={false}>
-                <EuiButtonEmpty onClick={onClose}>{cancelButtonLabel}</EuiButtonEmpty>
+                <EuiButtonEmpty onClick={onClose}>{i18nTexts.cancelButtonLabel}</EuiButtonEmpty>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiButton
-                  fill
-                  data-test-subj="submitButton"
-                  onClick={() => {
-                    form.submit();
-                  }}
-                >
-                  {processor ? updateButtonLabel : addButtonLabel}
+                <EuiButton fill data-test-subj="submitButton" onClick={form.submit}>
+                  {i18nTexts.updateButtonLabel}
                 </EuiButton>
               </EuiFlexItem>
             </EuiFlexGroup>

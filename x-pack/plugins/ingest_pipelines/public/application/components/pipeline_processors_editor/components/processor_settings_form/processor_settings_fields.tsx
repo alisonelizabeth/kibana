@@ -4,52 +4,22 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { i18n } from '@kbn/i18n';
-import { FormattedMessage } from '@kbn/i18n/react';
-import React, { FunctionComponent, memo, useEffect } from 'react';
-import {
-  EuiButton,
-  EuiButtonEmpty,
-  EuiHorizontalRule,
-  EuiFlyout,
-  EuiFlyoutHeader,
-  EuiFlyoutBody,
-  EuiFlyoutFooter,
-  EuiTitle,
-  EuiFlexGroup,
-  EuiFlexItem,
-} from '@elastic/eui';
+import React, { FunctionComponent, memo } from 'react';
+import { EuiHorizontalRule } from '@elastic/eui';
 
-import { Form, FormDataProvider, FormHook } from '../../../../../shared_imports';
+import { FormDataProvider } from '../../../../../shared_imports';
 import { ProcessorInternal } from '../../types';
 
-import { DocumentationButton } from './documentation_button';
 import { getProcessorFormDescriptor } from './map_processor_type_to_form';
 import { CommonProcessorFields, ProcessorTypeField } from './processors/common_fields';
 import { Custom } from './processors/custom';
 
 export interface Props {
   processor?: ProcessorInternal;
-  form: FormHook;
 }
 
-const updateButtonLabel = i18n.translate(
-  'xpack.ingestPipelines.settingsFormOnFailureFlyout.updateButtonLabel',
-  { defaultMessage: 'Update' }
-);
-const addButtonLabel = i18n.translate(
-  'xpack.ingestPipelines.settingsFormOnFailureFlyout.addButtonLabel',
-  { defaultMessage: 'Add' }
-);
-
-const cancelButtonLabel = i18n.translate(
-  'xpack.ingestPipelines.settingsFormOnFailureFlyout.cancelButtonLabel',
-  { defaultMessage: 'Cancel' }
-);
-
-// TODO rename file?
-export const ProcessorSettings: FunctionComponent<Props> = memo(
-  ({ processor, form }) => {
+export const ProcessorSettingsFields: FunctionComponent<Props> = memo(
+  ({ processor }) => {
     return (
       <>
         <ProcessorTypeField initialType={processor?.type} />
