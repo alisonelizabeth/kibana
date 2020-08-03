@@ -44,7 +44,6 @@ import {
   PipelineProcessorsItemTooltip,
   ProcessorSettingsForm,
   OnSubmitHandler,
-  ProcessorOutputFlyout,
 } from '../components';
 
 import { getValue } from '../utils';
@@ -258,9 +257,6 @@ export const PipelineProcessorsContextProvider: FunctionComponent<Props> = ({
           }}
         />
       )}
-      {mode.id === 'debuggingProcessor' ? (
-        <ProcessorOutputFlyout processor={mode.arg.processor} onClose={onCloseSettingsForm} />
-      ) : undefined}
     </PipelineProcessorsContext.Provider>
   );
 };

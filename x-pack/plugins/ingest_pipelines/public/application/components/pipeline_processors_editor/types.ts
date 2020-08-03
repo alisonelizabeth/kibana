@@ -55,7 +55,6 @@ export type OnUpdateHandler = (arg: OnUpdateHandlerArg) => void;
  */
 export type EditorMode =
   | { id: 'creatingProcessor'; arg: { selector: ProcessorSelector } }
-  | { id: 'debuggingProcessor'; arg: { processor: ProcessorInternal } }
   | { id: 'editingProcessor'; arg: { processor: ProcessorInternal; selector: ProcessorSelector } }
   | { id: 'idle' }
   | { id: 'movingProcessor'; arg: ProcessorInfo }

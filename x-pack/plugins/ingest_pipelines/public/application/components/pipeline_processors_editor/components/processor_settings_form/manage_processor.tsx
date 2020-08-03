@@ -29,6 +29,7 @@ import { getProcessorFormDescriptor } from './map_processor_type_to_form';
 
 import { ProcessorSettingsFields } from './processor_settings_fields';
 import { DocumentationButton } from './documentation_button';
+import { ProcessorOutput } from './processor_output';
 
 export interface Props {
   isOnFailure: boolean;
@@ -98,7 +99,8 @@ export const ManageProcessorFlyout: FunctionComponent<Props> = memo(
     let flyoutContent: React.ReactNode;
 
     if (activeTab === 'output') {
-      flyoutContent = <div>TODO: output tab</div>;
+      // TODO: this tab should be disabled unless the user has added sample documents
+      flyoutContent = <ProcessorOutput processor={processor} />;
     } else {
       flyoutContent = <ProcessorSettingsFields processor={processor} />;
     }

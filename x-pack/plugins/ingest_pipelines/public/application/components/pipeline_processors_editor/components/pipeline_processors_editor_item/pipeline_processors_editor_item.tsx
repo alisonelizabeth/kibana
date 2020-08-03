@@ -11,6 +11,7 @@ import {
   EuiButtonToggle,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiIcon,
   EuiPanel,
   EuiText,
   EuiToolTip,
@@ -132,19 +133,7 @@ export const PipelineProcessorsEditorItem: FunctionComponent<Props> = memo(
               <EuiFlexItem grow={false}>
                 {/* TODO temp */}
                 <EuiToolTip position="top" content={<p>Inactive</p>}>
-                  <EuiButtonIcon
-                    color="subdued"
-                    onClick={() => {
-                      editor.setMode({
-                        id: 'debuggingProcessor',
-                        arg: { processor, selector },
-                      });
-                    }}
-                    iconType="dot"
-                    size="s"
-                    aria-label="i18n TODO"
-                    // disabled={color === 'disabled' ? true : false}
-                  />
+                  <EuiIcon color="subdued" type="dot" size="s" aria-label="i18n TODO" />
                 </EuiToolTip>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
