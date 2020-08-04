@@ -35,7 +35,10 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
   } = usePipelineProcessorsContext();
 
   const { testPipelineData, setCurrentTestPipelineData } = useTestPipelineContext();
-  const { documents: cachedDocuments } = testPipelineData;
+  const {
+    config: { documents: cachedDocuments },
+    results: executeOutput,
+  } = testPipelineData;
 
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false);
 
@@ -43,11 +46,10 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
 
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [executeError, setExecuteError] = useState<any>(null);
-  const [executeOutput, setExecuteOutput] = useState<any>(undefined);
 
   const handleExecute = useCallback(
     async (
-      { documents, verbose }: { documents: object[]; verbose?: boolean },
+      { documents, verbose }: { documents?: object[]; verbose?: boolean },
       fetchPerProcessorResults?: boolean
     ) => {
       const serializedProcessors = serialize(processors.state);
@@ -56,7 +58,7 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
       setExecuteError(null);
 
       const { error, data: results } = await api.simulatePipeline({
-        documents,
+        documents: documents ?? cachedDocuments,
         verbose,
         pipeline: { ...serializedProcessors },
       });
@@ -75,21 +77,31 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
 
         // Call the simulate API again with verbose enabled so we can cache the per processor results
         const { data: verboseResults } = await api.simulatePipeline({
-          documents,
+          documents: documents ?? cachedDocuments,
           verbose: true,
           pipeline: { ...serializedProcessorsWithTag },
         });
 
         setCurrentTestPipelineData({
-          documents,
-          results,
-          resultsByProcessor: deserializeVerboseTestOutput(verboseResults),
+          type: 'updateResultsByProcessor',
+          payload: {
+            config: {
+              documents: documents ?? cachedDocuments,
+            },
+            results,
+            resultsByProcessor: deserializeVerboseTestOutput(verboseResults),
+          },
         });
       } else {
-        // TODO fix: this is going to be reset resultsByProcessor when verbose flag is toggled
         setCurrentTestPipelineData({
-          documents,
-          results,
+          type: 'updateResults',
+          payload: {
+            config: {
+              documents: documents ?? cachedDocuments,
+              verbose,
+            },
+            results,
+          },
         });
       }
 
@@ -104,7 +116,7 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
 
       setSelectedTab('output');
     },
-    [api, processors.state, setCurrentTestPipelineData, toasts]
+    [api, cachedDocuments, processors.state, setCurrentTestPipelineData, toasts]
   );
 
   let tabContent;
@@ -129,7 +141,11 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
       {isFlyoutVisible && (
         <EuiFlyout
           maxWidth={550}
-          onClose={() => setIsFlyoutVisible(false)}
+          onClose={() => {
+            setIsFlyoutVisible(false);
+            // reset flyout to default tab
+            setSelectedTab('documents');
+          }}
           data-test-subj="testPipelineFlyout"
         >
           <EuiFlyoutHeader>

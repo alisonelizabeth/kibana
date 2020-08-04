@@ -12,6 +12,7 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiIcon,
+  EuiLink,
   EuiPanel,
   EuiText,
   EuiToolTip,
@@ -136,12 +137,22 @@ export const PipelineProcessorsEditorItem: FunctionComponent<Props> = memo(
                   <EuiIcon color="subdued" type="dot" size="s" aria-label="i18n TODO" />
                 </EuiToolTip>
               </EuiFlexItem>
-              <EuiFlexItem grow={false}>
+              {/* TODO: Remove inline style */}
+              <EuiFlexItem grow={false} style={{ marginLeft: 0 }}>
                 <EuiText
                   className="pipelineProcessorsEditor__item__processorTypeLabel"
                   color={isDimmed ? 'subdued' : undefined}
                 >
-                  <b>{processor.type}</b>
+                  <EuiLink
+                    onClick={() => {
+                      editor.setMode({
+                        id: 'editingProcessor', // TODO change to 'viewingProcessor'?
+                        arg: { processor, selector },
+                      });
+                    }}
+                  >
+                    <b>{processor.type}</b>
+                  </EuiLink>
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem className={inlineTextInputContainerClasses} grow={false}>
@@ -173,26 +184,6 @@ export const PipelineProcessorsEditorItem: FunctionComponent<Props> = memo(
                   text={description}
                   placeholder={i18nTexts.descriptionPlaceholder}
                 />
-              </EuiFlexItem>
-              <EuiFlexItem className={actionElementClasses} grow={false}>
-                {!isInMoveMode && (
-                  <EuiToolTip content={i18nTexts.editButtonLabel}>
-                    <EuiButtonIcon
-                      data-test-subj="editItemButton"
-                      disabled={isEditorNotInIdleMode}
-                      aria-label={i18nTexts.editButtonLabel}
-                      iconType="arrowRight"
-                      size="s"
-                      onClick={() => {
-                        // TODO change mode from "editingProcessor" to "managingProcessor"?
-                        editor.setMode({
-                          id: 'editingProcessor',
-                          arg: { processor, selector },
-                        });
-                      }}
-                    />
-                  </EuiToolTip>
-                )}
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>

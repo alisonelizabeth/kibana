@@ -35,14 +35,17 @@ export interface Props {
 }
 
 export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor, onClose }) => {
-  const { testPipelineData } = useTestPipelineContext();
+  const { testPipelineData, setCurrentTestPipelineData } = useTestPipelineContext();
   const { type: processorType, id: processorId } = processor;
 
-  const { resultsByProcessor, documents } = testPipelineData;
+  const {
+    resultsByProcessor,
+    config: { documents, selectedDocumentIndex },
+  } = testPipelineData;
 
-  const [activePage, setActivePage] = useState(0);
-
-  const processorOutput = resultsByProcessor[activePage][processorId];
+  const processorOutput =
+    resultsByProcessor[selectedDocumentIndex] &&
+    resultsByProcessor[selectedDocumentIndex][processorId];
   const { prevProcessorResult, doc: currentResult, ignored_error: ignoredError } = processorOutput;
 
   return (
@@ -61,16 +64,28 @@ export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor, onC
           <EuiSpacer />
           <EuiFlexGroup justifyContent="spaceBetween" gutterSize="s">
             <EuiFlexItem>
-              {/* TODO i18n */}
-              <p>Processor output</p>
+              <p>
+                <FormattedMessage
+                  id="xpack.ingestPipelines.processorOutput.processorOutputCodeBlockLabel"
+                  defaultMessage="Processor output"
+                />
+              </p>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
               {documents.length > 1 && (
                 <EuiPagination
-                  pageCount={documents.length - 1}
-                  activePage={activePage}
-                  onPageClick={(page) => setActivePage(page)}
-                  compressed
+                  pageCount={documents.length}
+                  activePage={selectedDocumentIndex}
+                  onPageClick={(activePage) => {
+                    setCurrentTestPipelineData({
+                      type: 'updateActiveDocument',
+                      payload: {
+                        config: {
+                          selectedDocumentIndex: activePage,
+                        },
+                      },
+                    });
+                  }}
                 />
               )}
             </EuiFlexItem>
@@ -88,8 +103,12 @@ export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor, onC
             id="prev_accordion"
             buttonContent={
               <EuiText>
-                {/* TODO i18n */}
-                <p>View previous processor result</p>
+                <p>
+                  <FormattedMessage
+                    id="xpack.ingestPipelines.processorOutput.previousOutputCodeBlockLabel"
+                    defaultMessage="View previous processor result"
+                  />
+                </p>
               </EuiText>
             }
           >
@@ -110,8 +129,12 @@ export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor, onC
             id="ignored_error_accordion"
             buttonContent={
               <EuiText>
-                {/* TODO i18n */}
-                <p>View ignored error</p>
+                <p>
+                  <FormattedMessage
+                    id="xpack.ingestPipelines.processorOutput.ignoredErrorCodeBlockLabel"
+                    defaultMessage="View ignored error"
+                  />
+                </p>
               </EuiText>
             }
           >

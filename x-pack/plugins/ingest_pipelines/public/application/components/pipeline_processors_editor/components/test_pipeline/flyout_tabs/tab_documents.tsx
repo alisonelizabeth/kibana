@@ -37,8 +37,10 @@ interface Props {
 export const DocumentsTab: React.FunctionComponent<Props> = ({ handleExecute, isExecuting }) => {
   const { links, toasts } = usePipelineProcessorsContext();
 
-  const { setCurrentTestPipelineData, testPipelineData } = useTestPipelineContext();
-  const { documents: cachedDocuments } = testPipelineData;
+  const { testPipelineData } = useTestPipelineContext();
+  const {
+    config: { documents: cachedDocuments },
+  } = testPipelineData;
 
   const executePipeline: FormConfig['onSubmit'] = async (formData, isValid) => {
     if (!isValid) {

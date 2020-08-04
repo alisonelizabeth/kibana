@@ -4,10 +4,15 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState, useCallback, useContext } from 'react';
+import React, { useState, useCallback, useContext, useReducer } from 'react';
 
+// TODO need to update code to reflect new data structure
 export interface TestPipelineData {
-  documents?: object[];
+  config: {
+    documents?: object[];
+    verbose?: boolean;
+    selectedDocumentIndex?: number;
+  };
   results?: any; // todo fix TS
   resultsByProcessor?: any; // todo fix TS
 }
@@ -17,12 +22,16 @@ interface TestPipelineContext {
   setTestPipelineData: (data: TestPipelineData) => void;
 }
 
-const DEFAULT_TEST_PIPELINE_DATA = {
-  testPipelineData: {},
+const DEFAULT_TEST_PIPELINE_CONTEXT = {
+  testPipelineData: {
+    config: {
+      selectedDocumentIndex: 0,
+    },
+  },
   setCurrentTestPipelineData: () => {},
 };
 
-const TestPipelineContext = React.createContext<TestPipelineData>(DEFAULT_TEST_PIPELINE_DATA);
+const TestPipelineContext = React.createContext<TestPipelineData>(DEFAULT_TEST_PIPELINE_CONTEXT);
 
 export const useTestPipelineContext = () => {
   const ctx = useContext(TestPipelineContext);
@@ -34,20 +43,55 @@ export const useTestPipelineContext = () => {
   return ctx;
 };
 
-export const TestPipelineContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const [testPipelineData, setTestPipelineData] = useState<TestPipelineData>({});
+function reducer(state, action) {
+  if (action.type === 'updateResultsByProcessor') {
+    return {
+      ...action.payload,
+      config: {
+        ...action.payload.config,
+        selectedDocumentIndex: state.config.selectedDocumentIndex,
+      },
+    };
+  }
 
-  const setCurrentTestPipelineData = useCallback(
-    (currentTestPipelineData: TestPipelineData): void => {
-      setTestPipelineData(currentTestPipelineData);
-    },
-    []
+  if (action.type === 'updateResults') {
+    return {
+      ...action.payload,
+      config: {
+        ...action.payload.config,
+        selectedDocumentIndex: state.config.selectedDocumentIndex,
+      },
+      resultsByProcessor: state.resultsByProcessor,
+    };
+  }
+
+  if (action.type === 'updateActiveDocument') {
+    return {
+      ...state,
+      config: {
+        ...state.config,
+        selectedDocumentIndex: action.payload.config.selectedDocumentIndex,
+      },
+    };
+  }
+
+  return state;
+}
+
+export const TestPipelineContextProvider = ({ children }: { children: React.ReactNode }) => {
+  const [state, dispatch] = useReducer<TestPipelineData>(
+    reducer,
+    DEFAULT_TEST_PIPELINE_CONTEXT.testPipelineData
   );
+
+  const setCurrentTestPipelineData = useCallback((data: object): void => {
+    dispatch(data);
+  }, []);
 
   return (
     <TestPipelineContext.Provider
       value={{
-        testPipelineData,
+        testPipelineData: state,
         setCurrentTestPipelineData,
       }}
     >

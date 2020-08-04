@@ -24,9 +24,9 @@ import {
 
 import { Form, FormDataProvider, FormHook } from '../../../../../shared_imports';
 import { ProcessorInternal } from '../../types';
+import { useTestPipelineContext } from '../../context';
 
 import { getProcessorFormDescriptor } from './map_processor_type_to_form';
-
 import { ProcessorSettingsFields } from './processor_settings_fields';
 import { DocumentationButton } from './documentation_button';
 import { ProcessorOutput } from './processor_output';
@@ -87,6 +87,10 @@ export const ManageProcessorFlyout: FunctionComponent<Props> = memo(
       />
     );
 
+    const { testPipelineData } = useTestPipelineContext();
+
+    const { resultsByProcessor } = testPipelineData;
+
     useEffect(
       () => {
         onOpen();
@@ -99,7 +103,6 @@ export const ManageProcessorFlyout: FunctionComponent<Props> = memo(
     let flyoutContent: React.ReactNode;
 
     if (activeTab === 'output') {
-      // TODO: this tab should be disabled unless the user has added sample documents
       flyoutContent = <ProcessorOutput processor={processor} />;
     } else {
       flyoutContent = <ProcessorSettingsFields processor={processor} />;
@@ -146,6 +149,7 @@ export const ManageProcessorFlyout: FunctionComponent<Props> = memo(
                   isSelected={tab.id === activeTab}
                   key={tab.id}
                   data-test-subj={`${tab.id}Tab`}
+                  disabled={tab.id === 'output' && Boolean(resultsByProcessor) === false}
                 >
                   {tab.name}
                 </EuiTab>

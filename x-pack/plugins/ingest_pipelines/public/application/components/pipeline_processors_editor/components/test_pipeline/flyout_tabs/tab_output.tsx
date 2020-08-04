@@ -31,17 +31,20 @@ export const OutputTab: React.FunctionComponent<Props> = ({
   handleExecute,
   isExecuting,
 }) => {
-  const { setCurrentTestPipelineData, testPipelineData } = useTestPipelineContext();
-  const { documents: cachedDocuments, results } = testPipelineData;
+  const { testPipelineData } = useTestPipelineContext();
+  const {
+    results,
+    config: { verbose: cachedVerbose },
+  } = testPipelineData;
 
   const { links, toasts } = usePipelineProcessorsContext();
 
-  const [isVerboseEnabled, setIsVerboseEnabled] = useState(false);
+  const [isVerboseEnabled, setIsVerboseEnabled] = useState(Boolean(cachedVerbose));
 
   const onEnableVerbose = async (isVerbose: boolean) => {
     setIsVerboseEnabled(isVerbose);
 
-    await handleExecute({ documents: cachedDocuments!, verbose: isVerbose });
+    await handleExecute({ verbose: isVerbose });
   };
 
   let content: React.ReactNode | undefined;
@@ -85,9 +88,7 @@ export const OutputTab: React.FunctionComponent<Props> = ({
         <EuiFlexItem grow={false}>
           <EuiButton
             size="s"
-            onClick={() =>
-              handleExecute({ documents: cachedDocuments!, verbose: isVerboseEnabled })
-            }
+            onClick={() => handleExecute({ verbose: isVerboseEnabled })}
             iconType="refresh"
           >
             <FormattedMessage
