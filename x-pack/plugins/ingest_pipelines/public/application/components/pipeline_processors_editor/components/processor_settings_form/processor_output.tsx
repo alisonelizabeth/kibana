@@ -4,24 +4,13 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
-import { i18n } from '@kbn/i18n';
 
 import {
   EuiAccordion,
-  EuiBadge,
-  EuiButtonEmpty,
-  EuiCallOut,
   EuiCodeBlock,
-  EuiFlyout,
-  EuiFlyoutHeader,
-  EuiFlyoutBody,
-  EuiIcon,
   EuiText,
-  EuiTitle,
-  EuiToolTip,
-  EuiFlyoutFooter,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPagination,
@@ -30,23 +19,25 @@ import {
 import { useTestPipelineContext } from '../../context';
 
 export interface Props {
-  processor: any;
-  onClose: () => void;
+  processor: any; // TODO fix
 }
 
-export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor, onClose }) => {
+export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor }) => {
   const { testPipelineData, setCurrentTestPipelineData } = useTestPipelineContext();
-  const { type: processorType, id: processorId } = processor;
+  const { id: processorId } = processor;
 
   const {
     resultsByProcessor,
     config: { documents, selectedDocumentIndex },
   } = testPipelineData;
 
-  const processorOutput =
-    resultsByProcessor[selectedDocumentIndex] &&
-    resultsByProcessor[selectedDocumentIndex][processorId];
-  const { prevProcessorResult, doc: currentResult, ignored_error: ignoredError } = processorOutput;
+  const processorOutput = resultsByProcessor[selectedDocumentIndex][processorId];
+  const {
+    prevProcessorResult,
+    doc: currentResult,
+    ignored_error: ignoredError,
+    error,
+  } = processorOutput;
 
   return (
     <>
@@ -72,7 +63,7 @@ export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor, onC
               </p>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              {documents.length > 1 && (
+              {documents && documents.length > 1 && (
                 <EuiPagination
                   pageCount={documents.length}
                   activePage={selectedDocumentIndex}
@@ -96,6 +87,43 @@ export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor, onC
         </>
       )}
 
+      {error && (
+        <>
+          <EuiSpacer />
+          <EuiFlexGroup justifyContent="spaceBetween" gutterSize="s">
+            <EuiFlexItem>
+              <p>
+                <FormattedMessage
+                  id="xpack.ingestPipelines.processorOutput.processorErrorCodeBlockLabel"
+                  defaultMessage="Processor output"
+                />
+              </p>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              {documents && documents.length > 1 && (
+                <EuiPagination
+                  pageCount={documents.length}
+                  activePage={selectedDocumentIndex}
+                  onPageClick={(activePage) => {
+                    setCurrentTestPipelineData({
+                      type: 'updateActiveDocument',
+                      payload: {
+                        config: {
+                          selectedDocumentIndex: activePage,
+                        },
+                      },
+                    });
+                  }}
+                />
+              )}
+            </EuiFlexItem>
+          </EuiFlexGroup>
+          <EuiCodeBlock paddingSize="s" language="json" isCopyable>
+            {JSON.stringify(error, null, 2)}
+          </EuiCodeBlock>
+        </>
+      )}
+
       {prevProcessorResult?.doc && (
         <>
           <EuiSpacer />
@@ -106,7 +134,7 @@ export const ProcessorOutput: React.FunctionComponent<Props> = ({ processor, onC
                 <p>
                   <FormattedMessage
                     id="xpack.ingestPipelines.processorOutput.previousOutputCodeBlockLabel"
-                    defaultMessage="View previous processor result"
+                    defaultMessage="View previous processor output"
                   />
                 </p>
               </EuiText>

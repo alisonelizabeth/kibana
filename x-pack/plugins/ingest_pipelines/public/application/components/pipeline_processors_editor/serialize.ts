@@ -27,7 +27,7 @@ const convertProcessorInternalToProcessor = (
   };
 
   if (onFailure?.length) {
-    outProcessor[type].on_failure = convertProcessors(onFailure);
+    outProcessor[type].on_failure = convertProcessors(onFailure, addTag);
   } else if (onFailure) {
     outProcessor[type].on_failure = [];
   }

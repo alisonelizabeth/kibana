@@ -24,12 +24,14 @@ import {
 
 import { Form, FormDataProvider, FormHook } from '../../../../../shared_imports';
 import { ProcessorInternal } from '../../types';
-import { useTestPipelineContext } from '../../context';
+import { useTestPipelineContext, usePipelineProcessorsContext } from '../../context';
 
 import { getProcessorFormDescriptor } from './map_processor_type_to_form';
 import { ProcessorSettingsFields } from './processor_settings_fields';
 import { DocumentationButton } from './documentation_button';
 import { ProcessorOutput } from './processor_output';
+import { serialize } from '../../serialize';
+import { deserializeVerboseTestOutput } from '../../deserialize';
 
 export interface Props {
   isOnFailure: boolean;
@@ -87,9 +89,37 @@ export const ManageProcessorFlyout: FunctionComponent<Props> = memo(
       />
     );
 
-    const { testPipelineData } = useTestPipelineContext();
+    const { testPipelineData, setCurrentTestPipelineData } = useTestPipelineContext();
+    const {
+      resultsByProcessor,
+      config: { documents },
+    } = testPipelineData;
 
-    const { resultsByProcessor } = testPipelineData;
+    const {
+      state: { processors },
+      api,
+    } = usePipelineProcessorsContext();
+
+    const updateProcessorResults = async () => {
+      if (!documents) {
+        return;
+      }
+
+      const serializedProcessorsWithTag = serialize(processors.state, true);
+
+      const { data: verboseResults } = await api.simulatePipeline({
+        documents,
+        verbose: true,
+        pipeline: { ...serializedProcessorsWithTag },
+      });
+
+      setCurrentTestPipelineData({
+        type: 'updateResultsByProcessor',
+        payload: {
+          resultsByProcessor: deserializeVerboseTestOutput(verboseResults),
+        },
+      });
+    };
 
     useEffect(
       () => {
@@ -166,7 +196,14 @@ export const ManageProcessorFlyout: FunctionComponent<Props> = memo(
                 <EuiButtonEmpty onClick={onClose}>{i18nTexts.cancelButtonLabel}</EuiButtonEmpty>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiButton fill data-test-subj="submitButton" onClick={form.submit}>
+                <EuiButton
+                  fill
+                  data-test-subj="submitButton"
+                  onClick={async () => {
+                    await form.submit();
+                    updateProcessorResults();
+                  }}
+                >
                   {i18nTexts.updateButtonLabel}
                 </EuiButton>
               </EuiFlexItem>

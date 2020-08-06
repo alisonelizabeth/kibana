@@ -37,8 +37,6 @@ export const OutputTab: React.FunctionComponent<Props> = ({
     config: { verbose: cachedVerbose },
   } = testPipelineData;
 
-  const { links, toasts } = usePipelineProcessorsContext();
-
   const [isVerboseEnabled, setIsVerboseEnabled] = useState(Boolean(cachedVerbose));
 
   const onEnableVerbose = async (isVerbose: boolean) => {

@@ -142,9 +142,10 @@ export const FlyoutProvider: React.FunctionComponent<Props> = ({ children }) => 
         <EuiFlyout
           maxWidth={550}
           onClose={() => {
+            // reset to initial state
             setIsFlyoutVisible(false);
-            // reset flyout to default tab
             setSelectedTab('documents');
+            setExecuteError(null);
           }}
           data-test-subj="testPipelineFlyout"
         >

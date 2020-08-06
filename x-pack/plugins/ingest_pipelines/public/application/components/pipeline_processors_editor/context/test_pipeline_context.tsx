@@ -4,14 +4,14 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState, useCallback, useContext, useReducer } from 'react';
+import React, { useCallback, useContext, useReducer } from 'react';
 
 // TODO need to update code to reflect new data structure
 export interface TestPipelineData {
   config: {
     documents?: object[];
     verbose?: boolean;
-    selectedDocumentIndex?: number;
+    selectedDocumentIndex: number;
   };
   results?: any; // todo fix TS
   resultsByProcessor?: any; // todo fix TS
@@ -19,7 +19,7 @@ export interface TestPipelineData {
 
 interface TestPipelineContext {
   testPipelineData: TestPipelineData;
-  setTestPipelineData: (data: TestPipelineData) => void;
+  setCurrentTestPipelineData: (data: TestPipelineData) => void;
 }
 
 const DEFAULT_TEST_PIPELINE_CONTEXT = {
@@ -31,7 +31,7 @@ const DEFAULT_TEST_PIPELINE_CONTEXT = {
   setCurrentTestPipelineData: () => {},
 };
 
-const TestPipelineContext = React.createContext<TestPipelineData>(DEFAULT_TEST_PIPELINE_CONTEXT);
+const TestPipelineContext = React.createContext<TestPipelineContext>(DEFAULT_TEST_PIPELINE_CONTEXT);
 
 export const useTestPipelineContext = () => {
   const ctx = useContext(TestPipelineContext);
@@ -79,10 +79,7 @@ function reducer(state, action) {
 }
 
 export const TestPipelineContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, dispatch] = useReducer<TestPipelineData>(
-    reducer,
-    DEFAULT_TEST_PIPELINE_CONTEXT.testPipelineData
-  );
+  const [state, dispatch] = useReducer(reducer, DEFAULT_TEST_PIPELINE_CONTEXT.testPipelineData);
 
   const setCurrentTestPipelineData = useCallback((data: object): void => {
     dispatch(data);

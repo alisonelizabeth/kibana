@@ -66,12 +66,11 @@ export const deserialize = ({ processors, onFailure }: DeserializeArgs): Deseria
 export const deserializeVerboseTestOutput = (output) => {
   const { docs } = output;
 
-  const deserializedTestOutput = docs.map((doc) => {
+  const deserializedOutput = docs.map((doc) => {
     if (doc.processor_results) {
       const processorResultsById = doc.processor_results.reduce((acc, cur, index) => {
         const resultId = cur.tag;
 
-        // TODO store this under _kbnMeta?
         if (index !== 0) {
           // Add the result from the previous processor so that the user
           // can easily compare current output to the previous output
@@ -94,5 +93,5 @@ export const deserializeVerboseTestOutput = (output) => {
     return doc;
   });
 
-  return deserializedTestOutput;
+  return deserializedOutput;
 };
