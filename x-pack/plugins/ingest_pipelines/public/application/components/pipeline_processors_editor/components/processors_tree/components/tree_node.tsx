@@ -33,6 +33,7 @@ export const TreeNode: FunctionComponent<Props> = ({
   onAction,
   movingProcessor,
   level,
+  isFirstProcessor,
 }) => {
   const stringSelector = processorInfo.selector.join('.');
   const handlers = useMemo((): Handlers => {
@@ -90,6 +91,7 @@ export const TreeNode: FunctionComponent<Props> = ({
       handlers={handlers}
       description={processor.options.description}
       renderOnFailureHandlers={renderOnFailureHandlersTree}
+      isFirstProcessor={isFirstProcessor}
     />
   );
 };

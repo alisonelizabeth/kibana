@@ -18,3 +18,5 @@ export {
   usePipelineProcessorsContext,
   Props,
 } from './processors_context';
+
+export { useTourContext } from './tour_context';

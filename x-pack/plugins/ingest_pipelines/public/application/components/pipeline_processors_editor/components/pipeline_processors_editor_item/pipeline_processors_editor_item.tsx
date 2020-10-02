@@ -15,6 +15,8 @@ import {
   EuiPanel,
   EuiText,
   EuiToolTip,
+  EuiTourStep,
+  EuiSpacer,
 } from '@elastic/eui';
 
 import { ProcessorInternal, ProcessorSelector, ContextValueEditor } from '../../types';
@@ -23,7 +25,7 @@ import { ProcessorsDispatch } from '../../processors_reducer';
 
 import { ProcessorInfo } from '../processors_tree';
 import { PipelineProcessorsItemStatus } from '../pipeline_processors_editor_item_status';
-import { useTestPipelineContext } from '../../context';
+import { useTestPipelineContext, useTourContext } from '../../context';
 
 import { getProcessorDescriptor } from '../shared';
 
@@ -55,6 +57,7 @@ export const PipelineProcessorsEditorItem: FunctionComponent<Props> = memo(
     renderOnFailureHandlers,
     editor,
     processorsDispatch,
+    isFirstProcessor,
   }) {
     const isEditorNotInIdleMode = editor.mode.id !== 'idle';
     const isInMoveMode = Boolean(movingProcessor);
@@ -65,6 +68,10 @@ export const PipelineProcessorsEditorItem: FunctionComponent<Props> = memo(
       editor.mode.id === 'managingProcessor' && !isEditingThisProcessor;
     const isMovingOtherProcessor = editor.mode.id === 'movingProcessor' && !isMovingThisProcessor;
     const isDimmed = isEditingOtherProcessor || isMovingOtherProcessor;
+
+    const { tourSteps } = useTourContext();
+
+    const [, , , euiTourStepFour] = tourSteps;
 
     const { testPipelineData } = useTestPipelineContext();
     const {
@@ -150,27 +157,60 @@ export const PipelineProcessorsEditorItem: FunctionComponent<Props> = memo(
                 {isExecutingPipeline ? (
                   <EuiLoadingSpinner size="s" />
                 ) : (
-                  <PipelineProcessorsItemStatus processorStatus={processorStatus} />
+                  <PipelineProcessorsItemStatus
+                    processorStatus={processorStatus}
+                    isFirstProcessor={isFirstProcessor}
+                  />
                 )}
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiText
-                  className="pipelineProcessorsEditor__item__processorTypeLabel"
-                  color={isDimmed ? 'subdued' : undefined}
-                >
-                  <EuiLink
-                    disabled={isEditorNotInIdleMode}
-                    onClick={() => {
-                      editor.setMode({
-                        id: 'managingProcessor',
-                        arg: { processor, selector },
-                      });
-                    }}
-                    data-test-subj="manageItemButton"
+                {isFirstProcessor ? (
+                  <EuiTourStep
+                    {...euiTourStepFour}
+                    content={
+                      <div>
+                        <p>Click on the processor to view the detailed output.</p>
+                        <EuiSpacer />
+                      </div>
+                    }
                   >
-                    <b>{getProcessorDescriptor(processor.type)?.label ?? processor.type}</b>
-                  </EuiLink>
-                </EuiText>
+                    <EuiText
+                      className="pipelineProcessorsEditor__item__processorTypeLabel"
+                      color={isDimmed ? 'subdued' : undefined}
+                    >
+                      <EuiLink
+                        disabled={isEditorNotInIdleMode}
+                        onClick={() => {
+                          editor.setMode({
+                            id: 'managingProcessor',
+                            arg: { processor, selector },
+                          });
+                        }}
+                        data-test-subj="manageItemButton"
+                      >
+                        <b>{getProcessorDescriptor(processor.type)?.label ?? processor.type}</b>
+                      </EuiLink>
+                    </EuiText>
+                  </EuiTourStep>
+                ) : (
+                  <EuiText
+                    className="pipelineProcessorsEditor__item__processorTypeLabel"
+                    color={isDimmed ? 'subdued' : undefined}
+                  >
+                    <EuiLink
+                      disabled={isEditorNotInIdleMode}
+                      onClick={() => {
+                        editor.setMode({
+                          id: 'managingProcessor',
+                          arg: { processor, selector },
+                        });
+                      }}
+                      data-test-subj="manageItemButton"
+                    >
+                      <b>{getProcessorDescriptor(processor.type)?.label ?? processor.type}</b>
+                    </EuiLink>
+                  </EuiText>
+                )}
               </EuiFlexItem>
               <EuiFlexItem className={inlineTextInputContainerClasses} grow={false}>
                 <InlineTextInput

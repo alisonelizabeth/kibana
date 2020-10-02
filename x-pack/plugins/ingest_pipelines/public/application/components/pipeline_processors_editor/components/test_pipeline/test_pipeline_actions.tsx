@@ -5,9 +5,14 @@
  */
 import React, { FunctionComponent, useState } from 'react';
 import { i18n } from '@kbn/i18n';
-import { EuiFlexGroup, EuiFlexItem, EuiText } from '@elastic/eui';
+import { EuiFlexGroup, EuiFlexItem, EuiText, EuiTourStep, useEuiTour } from '@elastic/eui';
 
-import { useTestPipelineContext, usePipelineProcessorsContext } from '../../context';
+import { EuiSpacer, EuiButton } from '@elastic/eui';
+import {
+  useTestPipelineContext,
+  usePipelineProcessorsContext,
+  useTourContext,
+} from '../../context';
 import { DocumentsDropdown } from './documents_dropdown';
 import { TestPipelineFlyoutTab } from './test_pipeline_tabs';
 import { AddDocumentsButton } from './add_documents_button';
@@ -25,6 +30,10 @@ const i18nTexts = {
 
 export const TestPipelineActions: FunctionComponent = () => {
   const { testPipelineData, testPipelineDataDispatch } = useTestPipelineContext();
+
+  const { tourSteps, tourActions } = useTourContext();
+
+  const [euiTourStepOne] = tourSteps;
 
   const {
     state: { processors },
@@ -74,7 +83,20 @@ export const TestPipelineActions: FunctionComponent = () => {
               openFlyout={openFlyout}
             />
           ) : (
-            <AddDocumentsButton openFlyout={openFlyout} />
+            <EuiTourStep
+              {...euiTourStepOne}
+              content={
+                <div>
+                  <p>To test your pipeline, first add some sample documents.</p>
+                  <EuiSpacer />
+                  <EuiButton color="primary" onClick={tourActions.finishTour}>
+                    Ok, got it.
+                  </EuiButton>
+                </div>
+              }
+            >
+              <AddDocumentsButton openFlyout={openFlyout} />
+            </EuiTourStep>
           )}
         </EuiFlexItem>
 
@@ -92,7 +114,10 @@ export const TestPipelineActions: FunctionComponent = () => {
             processors: processors.state.processors,
             onFailure: processors.state.onFailure,
           }}
-          onClose={() => setOpenTestPipelineFlyout(false)}
+          onClose={() => {
+            setOpenTestPipelineFlyout(false);
+            tourActions.goToStep(2, true);
+          }}
         />
       )}
     </>

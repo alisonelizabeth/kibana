@@ -6,9 +6,10 @@
 
 import React, { FunctionComponent } from 'react';
 import { i18n } from '@kbn/i18n';
-import { EuiToolTip, EuiIcon, IconType } from '@elastic/eui';
+import { EuiToolTip, EuiIcon, IconType, EuiTourStep, EuiButton, EuiSpacer } from '@elastic/eui';
 import { ProcessorStatus } from '../types';
 import { ErrorIcon, ErrorIgnoredIcon, SkippedIcon } from './shared';
+import { useTourContext } from '../context';
 
 interface ProcessorStatusIcon {
   icon: IconType;
@@ -75,10 +76,17 @@ interface Props {
   processorStatus: ProcessorStatus;
 }
 
-export const PipelineProcessorsItemStatus: FunctionComponent<Props> = ({ processorStatus }) => {
+export const PipelineProcessorsItemStatus: FunctionComponent<Props> = ({
+  processorStatus,
+  isFirstProcessor,
+}) => {
   const { icon, iconColor, label } = processorStatusToIconMap[processorStatus] || unknownStatus;
 
-  return (
+  const { tourSteps, tourActions } = useTourContext();
+
+  const [, , euiTourStepThree] = tourSteps;
+
+  const processorStatusIcon = (
     <EuiToolTip position="top" content={<p>{label}</p>}>
       <EuiIcon
         color={iconColor}
@@ -89,4 +97,25 @@ export const PipelineProcessorsItemStatus: FunctionComponent<Props> = ({ process
       />
     </EuiToolTip>
   );
+
+  if (isFirstProcessor) {
+    return (
+      <EuiTourStep
+        {...euiTourStepThree}
+        content={
+          <div>
+            <p>Quickly view the status of each processor.</p>
+            <EuiSpacer />
+            <EuiButton color="primary" onClick={tourActions.incrementStep}>
+              Ok, got it.
+            </EuiButton>
+          </div>
+        }
+      >
+        {processorStatusIcon}
+      </EuiTourStep>
+    );
+  }
+
+  return <>{processorStatusIcon}</>;
 };

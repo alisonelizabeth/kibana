@@ -6,12 +6,15 @@
 import { i18n } from '@kbn/i18n';
 import React, { FunctionComponent, useState } from 'react';
 import {
-  EuiButton,
   EuiPopover,
   EuiPopoverFooter,
   EuiButtonEmpty,
   EuiPopoverTitle,
   EuiSelectable,
+  EuiTourStep,
+  EuiButton,
+  EuiSpacer,
+  EuiText,
 } from '@elastic/eui';
 
 import { Document } from '../../../types';
@@ -19,6 +22,7 @@ import { Document } from '../../../types';
 import { TestPipelineFlyoutTab } from '../test_pipeline_tabs';
 
 import './documents_dropdown.scss';
+import { useTourContext } from '../../../context';
 
 const i18nTexts = {
   dropdownLabel: i18n.translate(
@@ -56,20 +60,40 @@ export const DocumentsDropdown: FunctionComponent<Props> = ({
 }) => {
   const [showPopover, setShowPopover] = useState<boolean>(false);
 
+  const { tourSteps, tourActions } = useTourContext();
+
+  const [, euiTourStepTwo] = tourSteps;
+
   const managePipelineButton = (
-    <EuiButtonEmpty
-      data-test-subj="documentsButton"
-      onClick={() => setShowPopover((previousBool) => !previousBool)}
-      iconType="arrowDown"
-      iconSide="right"
+    <EuiTourStep
+      {...euiTourStepTwo}
+      content={
+        <div>
+          <EuiText>
+            <p>By default, you will see the results of the first document.</p>
+            <p>Use the dropdown to change documents.</p>
+          </EuiText>
+          <EuiSpacer />
+          <EuiButton color="primary" onClick={tourActions.incrementStep}>
+            Ok, got it.
+          </EuiButton>
+        </div>
+      }
     >
-      {i18n.translate('xpack.ingestPipelines.pipelineEditor.testPipeline.selectedDocumentLabel', {
-        defaultMessage: 'Document {selectedDocument}',
-        values: {
-          selectedDocument: selectedDocumentIndex + 1,
-        },
-      })}
-    </EuiButtonEmpty>
+      <EuiButtonEmpty
+        data-test-subj="documentsButton"
+        onClick={() => setShowPopover((previousBool) => !previousBool)}
+        iconType="arrowDown"
+        iconSide="right"
+      >
+        {i18n.translate('xpack.ingestPipelines.pipelineEditor.testPipeline.selectedDocumentLabel', {
+          defaultMessage: 'Document {selectedDocument}',
+          values: {
+            selectedDocument: selectedDocumentIndex + 1,
+          },
+        })}
+      </EuiButtonEmpty>
+    </EuiTourStep>
   );
 
   return (

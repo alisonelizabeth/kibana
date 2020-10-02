@@ -103,6 +103,7 @@ export const PrivateTree: FunctionComponent<PrivateProps> = ({
             processorInfo={info}
             onAction={onAction}
             movingProcessor={movingProcessor}
+            isFirstProcessor={idx === 0}
           />
         </EuiFlexItem>
         <EuiFlexItem>
