@@ -17,8 +17,11 @@
  * under the License.
  */
 
+import { PainlessParser } from '../antlr/PainlessParser';
 import { PainlessCompletionResult, PainlessCompletionItem, PainlessContext } from '../types';
 import { painlessTestContext, scoreContext, filterContext } from './context';
+
+import { getParser } from './utils';
 
 interface Field {
   name: string;
@@ -98,8 +101,12 @@ const getMethodDescription = (
 
 export class PainlessCompletionManager {
   context: Context;
-  constructor(private _painlessContext: PainlessContext) {
+  parser: PainlessParser;
+  constructor(private _painlessContext: PainlessContext, private _currentText: string) {
     this.context = mapContextToData[this._painlessContext] as Context;
+    this.parser = getParser(this._currentText);
+    // eslint-disable-next-line no-console
+    console.log('parser', this.parser);
   }
 
   createClassNameMap() {

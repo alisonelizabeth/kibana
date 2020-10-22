@@ -19,6 +19,7 @@
 
 import { monaco } from '../monaco_imports';
 import { PainlessCompletionResult, PainlessCompletionKind } from './types';
+import { PainlessWorker } from './worker';
 
 const getCompletionKind = (kind: PainlessCompletionKind): monaco.languages.CompletionItemKind => {
   const monacoItemKind = monaco.languages.CompletionItemKind;
@@ -59,9 +60,16 @@ export class PainlessCompletionAdapter implements monaco.languages.CompletionIte
       endLineNumber: position.lineNumber,
       endColumn: position.column,
     });
+
+    const currentText = model.getValue();
+
     return this._worker()
-      .then((worker: any) => {
-        return worker.provideAutocompleteSuggestions(currentLineChars, this._painlessContext);
+      .then((worker: PainlessWorker) => {
+        return worker.provideAutocompleteSuggestions(
+          currentText,
+          currentLineChars,
+          this._painlessContext
+        );
       })
       .then((completionInfo: PainlessCompletionResult) => {
         const wordInfo = model.getWordUntilPosition(position);

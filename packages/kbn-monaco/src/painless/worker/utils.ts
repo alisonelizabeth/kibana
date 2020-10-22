@@ -17,27 +17,16 @@
  * under the License.
  */
 
-import { monaco } from '../monaco_imports';
-import { PainlessWorker } from './worker';
-import { ID } from './constants';
+import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
+import { PainlessParser } from '../antlr/PainlessParser';
+import { PainlessLexer } from '../antlr/PainlessLexer';
 
-export class WorkerProxyService {
-  private worker: monaco.editor.MonacoWebWorker<PainlessWorker> | undefined;
+export const getParser = (code: string): PainlessParser => {
+  const inputStream = new ANTLRInputStream(code);
+  const lexer = new PainlessLexer(inputStream);
+  // @ts-ignore
+  const tokenStream = new CommonTokenStream(lexer);
+  const parser = new PainlessParser(tokenStream);
 
-  public async getWorker(resources: any[]) {
-    if (!this.worker) {
-      throw new Error('Worker Proxy Service has not been setup!');
-    }
-    await this.worker.withSyncedResources(resources);
-    const proxy = await this.worker.getProxy();
-    return proxy;
-  }
-
-  public setup() {
-    this.worker = monaco.editor.createWebWorker({ label: ID, moduleId: '' });
-  }
-
-  public stop() {
-    if (this.worker) this.worker.dispose();
-  }
-}
+  return parser;
+};

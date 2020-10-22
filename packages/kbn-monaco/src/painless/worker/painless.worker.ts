@@ -23,10 +23,13 @@
 import 'regenerator-runtime/runtime';
 // @ts-ignore
 import * as worker from 'monaco-editor/esm/vs/editor/editor.worker';
+import { monaco } from '../../monaco_imports';
+
+// @ts-ignore
 import { PainlessWorker } from './painless_worker';
 
 self.onmessage = () => {
-  worker.initialize((ctx: any, createData: any) => {
+  worker.initialize((ctx: monaco.worker.IWorkerContext, createData: any) => {
     return new PainlessWorker();
   });
 };

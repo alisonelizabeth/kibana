@@ -22,11 +22,14 @@ import { PainlessCompletionResult, PainlessContext } from '../types';
 import { PainlessCompletionManager } from './completion_manager';
 
 export class PainlessWorker {
+  constructor() {}
+
   async provideAutocompleteSuggestions(
+    currentText: string,
     currentLineChars: string,
     context: PainlessContext
   ): Promise<PainlessCompletionResult> {
-    const completionManager = new PainlessCompletionManager(context);
+    const completionManager = new PainlessCompletionManager(context, currentText);
     // Array of the active line words, e.g., [boolean, isInCircle]
     const words = currentLineChars.replace('\t', '').split(' ');
     // What the user is currently typing

@@ -6,15 +6,18 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "node ./scripts/build.js",
-    "kbn:bootstrap": "yarn build --dev"
+    "kbn:bootstrap": "yarn build --dev",
+    "antlr4ts": "antlr4ts ./PainlessLexer.g4 ./PainlessParser.g4 -o ./src/painless/antlr"
   },
   "dependencies": {
-    "regenerator-runtime": "^0.13.3",
-    "monaco-editor": "~0.17.0"
+    "antlr4ts": "^0.5.0-alpha.3",
+    "monaco-editor": "~0.17.0",
+    "regenerator-runtime": "^0.13.3"
   },
   "devDependencies": {
     "@kbn/babel-preset": "1.0.0",
     "@kbn/dev-utils": "1.0.0",
+    "antlr4ts-cli": "^0.5.0-alpha.3",
     "babel-loader": "^8.0.6",
     "css-loader": "^3.4.2",
     "del": "^5.1.0",
