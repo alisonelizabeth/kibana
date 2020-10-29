@@ -17,19 +17,31 @@
  * under the License.
  */
 
-import { PainlessCompletionResult, PainlessContext } from '../types';
+import { monaco } from '../../monaco_imports';
+import { PainlessCompletionResult, PainlessContext, Field } from '../types';
 
-import { PainlessCompletionManager } from './completion_manager';
+import { PainlessCompletionService } from './services';
 
 export class PainlessWorker {
-  constructor() {}
+  private _ctx: monaco.worker.IWorkerContext;
+
+  constructor(ctx: monaco.worker.IWorkerContext) {
+    this._ctx = ctx;
+  }
+
+  private getTextDocument(): string {
+    const model = this._ctx.getMirrorModels()[0];
+    return model.getValue();
+  }
 
   async provideAutocompleteSuggestions(
-    currentText: string,
     currentLineChars: string,
-    context: PainlessContext
+    context: PainlessContext,
+    fields?: Field[]
   ): Promise<PainlessCompletionResult> {
-    const completionManager = new PainlessCompletionManager(context, currentText);
+    const code = this.getTextDocument();
+
+    const completionService = new PainlessCompletionService(context, code);
     // Array of the active line words, e.g., [boolean, isInCircle]
     const words = currentLineChars.replace('\t', '').split(' ');
     // What the user is currently typing
@@ -38,25 +50,22 @@ export class PainlessWorker {
     // If the active typing contains dot notation, we assume we need to access the object's properties
     const isProperty = activeTyping.split('.').length === 2;
     // If the preceding word is a type, e.g., "boolean", we assume the user is declaring a variable and skip autocomplete
-    const hasDeclaredType = words.length === 2 && completionManager.getTypes().includes(words[0]);
-    // If the preceding word contains the "new" keyword, we only provide constructor autcompletion
-    const isConstructor = words[words.length - 2] === 'new';
+    const hasDeclaredType =
+      words.length === 2 && completionService.getPrimitives().includes(words[0]);
+    const isField = activeTyping === `doc['`;
 
     let autocompleteSuggestions: PainlessCompletionResult = {
       isIncomplete: false,
       suggestions: [],
     };
 
-    if (isConstructor) {
-      autocompleteSuggestions = completionManager.getPainlessConstructorsToAutocomplete();
+    if (fields && isField) {
+      autocompleteSuggestions = completionService.getFieldSuggestions(fields);
     } else if (isProperty) {
       const className = activeTyping.substring(0, activeTyping.length - 1).split('.')[0];
-
-      autocompleteSuggestions = completionManager.getPainlessClassToAutocomplete(className);
-    } else {
-      if (!hasDeclaredType) {
-        autocompleteSuggestions = completionManager.getPainlessClassesToAutocomplete();
-      }
+      autocompleteSuggestions = completionService.getPainlessClassSuggestions(className);
+    } else if (!hasDeclaredType) {
+      autocompleteSuggestions = completionService.getStaticSuggestions();
     }
 
     return Promise.resolve(autocompleteSuggestions);

@@ -22,3 +22,5 @@ import { lexerRules } from './lexer_rules';
 import { getSuggestionProvider } from './language';
 
 export const PainlessLang = { ID, getSuggestionProvider, lexerRules };
+
+export { PainlessContext } from './types';

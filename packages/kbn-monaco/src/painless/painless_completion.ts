@@ -18,6 +18,7 @@
  */
 
 import { monaco } from '../monaco_imports';
+import { ContextService } from './context_service';
 import { PainlessCompletionResult, PainlessCompletionKind } from './types';
 import { PainlessWorker } from './worker';
 
@@ -35,16 +36,26 @@ const getCompletionKind = (kind: PainlessCompletionKind): monaco.languages.Compl
       return monacoItemKind.Constructor;
     case 'property':
       return monacoItemKind.Property;
+    case 'keyword':
+      return monacoItemKind.Keyword;
+    case 'field':
+      return monacoItemKind.Field;
+    default:
+      return monacoItemKind.Text;
   }
-  return monacoItemKind.Property;
 };
 
 export class PainlessCompletionAdapter implements monaco.languages.CompletionItemProvider {
-  // @ts-ignore
-  constructor(private _worker, private _painlessContext) {}
+  constructor(
+    private _worker: {
+      (...uris: monaco.Uri[]): Promise<PainlessWorker>;
+      (arg0: monaco.Uri): Promise<PainlessWorker>;
+    },
+    private _contextService: ContextService
+  ) {}
 
   public get triggerCharacters(): string[] {
-    return ['.'];
+    return ['.', `'`];
   }
 
   provideCompletionItems(
@@ -61,14 +72,12 @@ export class PainlessCompletionAdapter implements monaco.languages.CompletionIte
       endColumn: position.column,
     });
 
-    const currentText = model.getValue();
-
-    return this._worker()
+    return this._worker(model.uri)
       .then((worker: PainlessWorker) => {
         return worker.provideAutocompleteSuggestions(
-          currentText,
           currentLineChars,
-          this._painlessContext
+          this._contextService.workerContext,
+          this._contextService.editorFields
         );
       })
       .then((completionInfo: PainlessCompletionResult) => {
@@ -81,13 +90,16 @@ export class PainlessCompletionAdapter implements monaco.languages.CompletionIte
         };
 
         const suggestions = completionInfo.suggestions.map(
-          ({ label, insertText, documentation, kind }) => {
+          ({ label, insertText, documentation, kind, insertTextAsSnippet }) => {
             return {
               label,
               insertText,
               documentation,
               range: wordRange,
               kind: getCompletionKind(kind),
+              insertTextRules: insertTextAsSnippet
+                ? monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+                : undefined,
             };
           }
         );

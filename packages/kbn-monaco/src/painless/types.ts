@@ -17,18 +17,41 @@
  * under the License.
  */
 
-export type PainlessCompletionKind = 'type' | 'class' | 'method' | 'constructor' | 'property';
+export type PainlessCompletionKind =
+  | 'type'
+  | 'class'
+  | 'method'
+  | 'constructor'
+  | 'property'
+  | 'field'
+  | 'keyword';
 
-export type PainlessContext = 'painless_test' | 'filter' | 'score';
+export type PainlessContext =
+  | 'painless_test'
+  | 'filter'
+  | 'score'
+  | 'boolean_script_field_script_field'
+  | 'date_script_field'
+  | 'double_script_field_script_field'
+  | 'ip_script_field_script_field'
+  | 'long_script_field_script_field'
+  | 'processor_conditional'
+  | 'string_script_field_script_field';
 
 export interface PainlessCompletionItem {
   label: string;
   kind: PainlessCompletionKind;
   documentation: string;
   insertText: string;
+  insertTextAsSnippet?: boolean;
 }
 
 export interface PainlessCompletionResult {
   isIncomplete: boolean;
   suggestions: PainlessCompletionItem[];
+}
+
+export interface Field {
+  name: string;
+  type: string;
 }

@@ -30,6 +30,6 @@ import { PainlessWorker } from './painless_worker';
 
 self.onmessage = () => {
   worker.initialize((ctx: monaco.worker.IWorkerContext, createData: any) => {
-    return new PainlessWorker();
+    return new PainlessWorker(ctx);
   });
 };
