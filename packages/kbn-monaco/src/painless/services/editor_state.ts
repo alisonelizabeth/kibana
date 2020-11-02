@@ -17,28 +17,29 @@
  * under the License.
  */
 
-import { monaco } from '../monaco_imports';
-import { PainlessWorker } from './worker';
-import { ID } from './constants';
+import { PainlessContext, Field } from '../types';
 
-export class WorkerProxyService {
-  private worker: monaco.editor.MonacoWebWorker<PainlessWorker> | undefined;
+export interface EditorState {
+  context: PainlessContext;
+  fields?: Field[];
+}
 
-  public async getWorker(resources: monaco.Uri[]) {
-    if (!this.worker) {
-      throw new Error('Worker Proxy Service has not been setup!');
+export class EditorStateService {
+  context: PainlessContext = 'painless_test';
+  fields: Field[] = [];
+
+  public getState(): EditorState {
+    return {
+      context: this.context,
+      fields: this.fields,
+    };
+  }
+
+  public setup(context: PainlessContext, fields?: Field[]) {
+    this.context = context;
+
+    if (fields) {
+      this.fields = fields;
     }
-
-    await this.worker.withSyncedResources(resources);
-    const proxy = await this.worker.getProxy();
-    return proxy;
-  }
-
-  public setup() {
-    this.worker = monaco.editor.createWebWorker({ label: ID, moduleId: '' });
-  }
-
-  public stop() {
-    if (this.worker) this.worker.dispose();
   }
 }
