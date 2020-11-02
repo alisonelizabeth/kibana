@@ -26,16 +26,16 @@ import {
 } from '../../types';
 
 import {
-  painless_test,
-  score,
-  filter,
-  boolean_script_field_script_field,
-  date_script_field,
-  double_script_field_script_field,
-  ip_script_field_script_field,
-  long_script_field_script_field,
-  processor_conditional,
-  string_script_field_script_field,
+  painlessTestContext,
+  scoreContext,
+  filterContext,
+  booleanScriptFieldScriptFieldContext,
+  dateScriptFieldContext,
+  doubleScriptFieldScriptFieldContext,
+  ipScriptFieldScriptFieldContext,
+  longScriptFieldScriptFieldContext,
+  processorConditionalContext,
+  stringScriptFieldScriptFieldContext,
 } from '../../autocomplete_definitions';
 
 import { PainlessParser } from '../../antlr/PainlessParser';
@@ -43,20 +43,21 @@ import { PainlessParser } from '../../antlr/PainlessParser';
 import { getParser } from '../utils';
 
 interface Suggestion extends PainlessCompletionItem {
-  children: PainlessCompletionItem[];
+  properties?: PainlessCompletionItem[];
+  constructorDefinition?: PainlessCompletionItem;
 }
 
-const mapContextToData: { [key: string]: object } = {
-  painless_test,
-  score,
-  filter,
-  boolean_script_field_script_field,
-  date_script_field,
-  double_script_field_script_field,
-  ip_script_field_script_field,
-  long_script_field_script_field,
-  processor_conditional,
-  string_script_field_script_field,
+const mapContextToData: { [key: string]: { suggestions: any[] } } = {
+  painless_test: painlessTestContext,
+  score: scoreContext,
+  filter: filterContext,
+  boolean_script_field_script_field: booleanScriptFieldScriptFieldContext,
+  date_script_field: dateScriptFieldContext,
+  double_script_field_script_field: doubleScriptFieldScriptFieldContext,
+  ip_script_field_script_field: ipScriptFieldScriptFieldContext,
+  long_script_field_script_field: longScriptFieldScriptFieldContext,
+  processor_conditional: processorConditionalContext,
+  string_script_field_script_field: stringScriptFieldScriptFieldContext,
 };
 
 export class PainlessCompletionService {
@@ -64,7 +65,7 @@ export class PainlessCompletionService {
   parser: PainlessParser;
 
   constructor(private _painlessContext: PainlessContext, private _currentText: string) {
-    this.suggestions = mapContextToData[this._painlessContext] as Suggestion[];
+    this.suggestions = mapContextToData[this._painlessContext].suggestions;
     this.parser = getParser(this._currentText);
     // eslint-disable-next-line no-console
     console.log('currentText', this._currentText);
@@ -74,7 +75,7 @@ export class PainlessCompletionService {
 
   getStaticSuggestions(): PainlessCompletionResult {
     const suggestions: PainlessCompletionItem[] = this.suggestions.map((suggestion) => {
-      const { children, ...rootSuggestion } = suggestion;
+      const { properties, ...rootSuggestion } = suggestion;
       return rootSuggestion;
     });
 
@@ -100,16 +101,16 @@ export class PainlessCompletionService {
       .map((type) => type.label);
   }
 
-  getPainlessClassSuggestions(className: string): PainlessCompletionResult {
+  getPropertySuggestions(className: string): PainlessCompletionResult {
     const painlessClass = this.suggestions.find((suggestion) => suggestion.label === className);
 
     return {
       isIncomplete: false,
-      suggestions: painlessClass?.children || [],
+      suggestions: painlessClass?.properties || [],
     };
   }
 
-  getFieldSuggestions(fields: Field[]) {
+  getFieldSuggestions(fields: Field[]): PainlessCompletionResult {
     const suggestions = fields.map(({ name }) => {
       return {
         label: name,
@@ -123,6 +124,25 @@ export class PainlessCompletionService {
     return {
       isIncomplete: false,
       suggestions,
+    };
+  }
+
+  getConstructorSuggestions(): PainlessCompletionResult {
+    let constructorSuggestions: PainlessCompletionItem[] = [];
+
+    const suggestionsWithConstructors = this.suggestions.filter(
+      (suggestion) => suggestion.constructorDefinition
+    );
+
+    if (suggestionsWithConstructors) {
+      constructorSuggestions = suggestionsWithConstructors.map(
+        (filteredSuggestion) => filteredSuggestion.constructorDefinition!
+      );
+    }
+
+    return {
+      isIncomplete: false,
+      suggestions: constructorSuggestions,
     };
   }
 }
