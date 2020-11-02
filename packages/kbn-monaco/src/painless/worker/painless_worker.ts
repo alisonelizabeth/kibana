@@ -21,6 +21,7 @@ import { monaco } from '../../monaco_imports';
 import { PainlessCompletionResult, PainlessContext, Field } from '../types';
 
 import { PainlessCompletionService } from './services';
+import { parseAndGetSyntaxErrors } from './parser';
 
 export class PainlessWorker {
   private _ctx: monaco.worker.IWorkerContext;
@@ -32,6 +33,12 @@ export class PainlessWorker {
   private getTextDocument(): string {
     const model = this._ctx.getMirrorModels()[0];
     return model.getValue();
+  }
+
+  async getSyntaxErrors() {
+    const code = this.getTextDocument();
+    const syntaxErrors = parseAndGetSyntaxErrors(code);
+    return syntaxErrors;
   }
 
   async provideAutocompleteSuggestions(

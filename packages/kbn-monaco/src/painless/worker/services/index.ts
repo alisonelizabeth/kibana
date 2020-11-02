@@ -18,3 +18,4 @@
  */
 
 export { PainlessCompletionService } from './completion';
+export { PainlessErrorService, PainlessError } from './error';

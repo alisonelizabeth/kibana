@@ -38,9 +38,7 @@ import {
   stringScriptFieldScriptFieldContext,
 } from '../../autocomplete_definitions';
 
-import { PainlessParser } from '../../antlr/PainlessParser';
-
-import { getParser } from '../utils';
+import { parseAndGetAST } from '../parser';
 
 interface Suggestion extends PainlessCompletionItem {
   properties?: PainlessCompletionItem[];
@@ -62,15 +60,13 @@ const mapContextToData: { [key: string]: { suggestions: any[] } } = {
 
 export class PainlessCompletionService {
   suggestions: Suggestion[];
-  parser: PainlessParser;
+  ast: any;
 
   constructor(private _painlessContext: PainlessContext, private _currentText: string) {
     this.suggestions = mapContextToData[this._painlessContext].suggestions;
-    this.parser = getParser(this._currentText);
+    this.ast = parseAndGetAST(this._currentText);
     // eslint-disable-next-line no-console
-    console.log('currentText', this._currentText);
-    // eslint-disable-next-line no-console
-    console.log('source', this.parser.source());
+    console.log('ast', this.ast);
   }
 
   getStaticSuggestions(): PainlessCompletionResult {

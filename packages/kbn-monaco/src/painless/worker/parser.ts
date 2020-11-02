@@ -20,13 +20,37 @@
 import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 import { PainlessParser } from '../antlr/PainlessParser';
 import { PainlessLexer } from '../antlr/PainlessLexer';
+import { PainlessError, PainlessErrorService } from './services';
 
-export const getParser = (code: string): PainlessParser => {
+const parse = (code: string) => {
   const inputStream = new ANTLRInputStream(code);
   const lexer = new PainlessLexer(inputStream);
   // @ts-ignore
+  lexer.removeErrorListeners();
+  const painlessLangErrorListener = new PainlessErrorService();
+  // @ts-ignore
+  lexer.addErrorListener(painlessLangErrorListener);
+  // @ts-ignore
   const tokenStream = new CommonTokenStream(lexer);
   const parser = new PainlessParser(tokenStream);
+  // @ts-ignore
+  parser.removeErrorListeners();
+  // @ts-ignore
+  parser.addErrorListener(painlessLangErrorListener);
+  const errors: PainlessError[] = painlessLangErrorListener.getErrors();
 
-  return parser;
+  return {
+    ast: parser.source(),
+    errors,
+  };
 };
+
+export function parseAndGetAST(code: string) {
+  const { ast } = parse(code);
+  return ast;
+}
+
+export function parseAndGetSyntaxErrors(code: string): PainlessError[] {
+  const { errors } = parse(code);
+  return errors;
+}
