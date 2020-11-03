@@ -26,7 +26,7 @@ isSlashRegex(): boolean {
         if (lastToken == null) {
             return true;
         }
-        switch (lastToken.getType()) {
+        switch (lastToken._type) {
         case PainlessLexer.RBRACE:
         case PainlessLexer.RP:
         case PainlessLexer.OCTAL:

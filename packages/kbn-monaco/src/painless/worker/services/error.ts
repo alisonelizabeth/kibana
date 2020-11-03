@@ -25,7 +25,6 @@ export interface PainlessError {
   endLineNumber: number;
   endColumn: number;
   message: string;
-  code: string;
 }
 
 export class PainlessErrorService implements ANTLRErrorListener<any> {
@@ -35,17 +34,22 @@ export class PainlessErrorService implements ANTLRErrorListener<any> {
     recognizer: Recognizer<any, any>,
     offendingSymbol: any,
     line: number,
-    charPositionInLine: number,
+    column: number,
     message: string,
     e: RecognitionException | undefined
   ): void {
+    let endColumn = column + 1;
+
+    if (offendingSymbol._text) {
+      endColumn = column + offendingSymbol._text.length;
+    }
+
     this.errors.push({
       startLineNumber: line,
       endLineNumber: line,
-      startColumn: charPositionInLine,
-      endColumn: charPositionInLine + 1, // Let's suppose the length of the error is only 1 char for simplicity
+      startColumn: column,
+      endColumn,
       message,
-      code: '1', // This the error code you can customize them as you want
     });
   }
 

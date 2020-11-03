@@ -162,26 +162,28 @@ export class PainlessLexer extends Lexer {
 
 	/** Is the preceding {@code /} a the beginning of a regex (true) or a division (false). */
 	isSlashRegex(): boolean {
-	        const lastToken = super.nextToken();
-	        if (lastToken == null) {
-	            return true;
-          }
-          // @ts-ignore
-	        switch (lastToken.getType()) {
-	        case PainlessLexer.RBRACE:
-	        case PainlessLexer.RP:
-	        case PainlessLexer.OCTAL:
-	        case PainlessLexer.HEX:
-	        case PainlessLexer.INTEGER:
-	        case PainlessLexer.DECIMAL:
-	        case PainlessLexer.ID:
-	        case PainlessLexer.DOTINTEGER:
-	        case PainlessLexer.DOTID:
-	            return false;
-	        default:
-	            return true;
-	        }
-	    }
+    const lastToken = super.nextToken();
+
+    if (lastToken == null) {
+        return true;
+    }
+
+    // @ts-ignore
+    switch (lastToken._type) {
+      case PainlessLexer.RBRACE:
+      case PainlessLexer.RP:
+      case PainlessLexer.OCTAL:
+      case PainlessLexer.HEX:
+      case PainlessLexer.INTEGER:
+      case PainlessLexer.DECIMAL:
+      case PainlessLexer.ID:
+      case PainlessLexer.DOTINTEGER:
+      case PainlessLexer.DOTID:
+          return false;
+      default:
+          return true;
+      }
+  }
 
 
 	constructor(input: CharStream) {
