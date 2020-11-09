@@ -17,11 +17,12 @@
  * under the License.
  */
 
+import { i18n } from '@kbn/i18n';
+
 import {
   PainlessCompletionResult,
   PainlessCompletionItem,
   PainlessContext,
-  PainlessCompletionKind,
   Field,
 } from '../../types';
 
@@ -40,10 +41,21 @@ import {
 
 import { parseAndGetAST } from '../parser';
 
-interface Suggestion extends PainlessCompletionItem {
+import { lexerRules } from '../../lexer_rules';
+
+export interface Suggestion extends PainlessCompletionItem {
   properties?: PainlessCompletionItem[];
   constructorDefinition?: PainlessCompletionItem;
 }
+
+const keywords: PainlessCompletionItem[] = lexerRules.keywords.map((keyword) => {
+  return {
+    label: keyword,
+    kind: 'keyword',
+    documentation: 'Keyword: char',
+    insertText: keyword,
+  };
+});
 
 const mapContextToData: { [key: string]: { suggestions: any[] } } = {
   painless_test: painlessTestContext,
@@ -69,25 +81,33 @@ export class PainlessCompletionService {
     console.log('ast', this.ast);
   }
 
-  getStaticSuggestions(): PainlessCompletionResult {
-    const suggestions: PainlessCompletionItem[] = this.suggestions.map((suggestion) => {
-      const { properties, ...rootSuggestion } = suggestion;
+  getStaticSuggestions(hasFields: boolean): PainlessCompletionResult {
+    const classSuggestions: PainlessCompletionItem[] = this.suggestions.map((suggestion) => {
+      const { properties, constructorDefinition, ...rootSuggestion } = suggestion;
       return rootSuggestion;
     });
 
+    const keywordSuggestions: PainlessCompletionItem[] = hasFields
+      ? [
+          ...keywords,
+          {
+            label: 'doc',
+            kind: 'keyword',
+            documentation: i18n.translate(
+              'monaco.painlessLanguage.autocomplete.docKeywordDescription',
+              {
+                defaultMessage: `Access a field value from a script using the doc['field_name'] syntax`,
+              }
+            ),
+            insertText: "doc[${1:'my_field'}]",
+            insertTextAsSnippet: true,
+          },
+        ]
+      : keywords;
+
     return {
       isIncomplete: false,
-      suggestions: [
-        ...suggestions,
-        {
-          label: 'doc',
-          kind: 'keyword',
-          // TODO i18n
-          documentation: `Access a field value from a script using the doc['field_name'] syntax`,
-          insertText: "doc[${1:'my_field'}]",
-          insertTextAsSnippet: true,
-        },
-      ],
+      suggestions: [...classSuggestions, ...keywordSuggestions],
     };
   }
 
@@ -97,7 +117,7 @@ export class PainlessCompletionService {
       .map((type) => type.label);
   }
 
-  getPropertySuggestions(className: string): PainlessCompletionResult {
+  getClassMemberSuggestions(className: string): PainlessCompletionResult {
     const painlessClass = this.suggestions.find((suggestion) => suggestion.label === className);
 
     return {
@@ -107,12 +127,20 @@ export class PainlessCompletionService {
   }
 
   getFieldSuggestions(fields: Field[]): PainlessCompletionResult {
-    const suggestions = fields.map(({ name }) => {
+    const suggestions: PainlessCompletionItem[] = fields.map(({ name }) => {
       return {
         label: name,
-        kind: 'field' as PainlessCompletionKind,
-        // TODO i18n
-        documentation: `Retrieve the value for field ${name}`,
+        kind: 'field',
+        documentation: i18n.translate(
+          'monaco.painlessLanguage.autocomplete.fieldValueDescription',
+          {
+            defaultMessage: `Retrieve the value for field '{fieldName}'`,
+            values: {
+              fieldName: name,
+            },
+          }
+        ),
+        // A trailing quotation mark is added to format the field for the user
         insertText: `${name}'`,
       };
     });
