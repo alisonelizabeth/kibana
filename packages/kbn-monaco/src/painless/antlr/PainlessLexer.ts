@@ -179,12 +179,11 @@ export class PainlessLexer extends Lexer {
       case PainlessLexer.ID:
       case PainlessLexer.DOTINTEGER:
       case PainlessLexer.DOTID:
-          return false;
+        return false;
       default:
-          return true;
-      }
+        return true;
+    }
   }
-
 
 	constructor(input: CharStream) {
     super(input);
@@ -209,10 +208,10 @@ export class PainlessLexer extends Lexer {
 	// @Override
 	public sempred(_localctx: RuleContext, ruleIndex: number, predIndex: number): boolean {
 		switch (ruleIndex) {
-		case 30:
+		case 31:
 			return this.DIV_sempred(_localctx, predIndex);
 
-		case 76:
+		case 77:
 			return this.REGEX_sempred(_localctx, predIndex);
 		}
 		return true;
@@ -220,14 +219,14 @@ export class PainlessLexer extends Lexer {
 	private DIV_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 0:
-			return  this.isSlashRegex() == false ;
+      return this.isSlashRegex() === false;
 		}
 		return true;
 	}
 	private REGEX_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 1:
-			return  this.isSlashRegex() ;
+			return  this.isSlashRegex();
 		}
 		return true;
 	}

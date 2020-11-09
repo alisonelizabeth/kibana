@@ -60,7 +60,7 @@ INSTANCEOF: 'instanceof';
 BOOLNOT: '!';
 BWNOT:   '~';
 MUL:     '*';
-DIV:     '/' { isSlashRegex() == false }?;
+DIV:     '/' { isSlashRegex() === false }?;
 REM:     '%';
 ADD:     '+';
 SUB:     '-';
