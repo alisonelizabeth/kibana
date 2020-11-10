@@ -157,33 +157,6 @@ export class PainlessLexer extends Lexer {
 	public get vocabulary(): Vocabulary {
 		return PainlessLexer.VOCABULARY;
 	}
-	// tslint:enable:no-trailing-whitespace
-
-
-	/** Is the preceding {@code /} a the beginning of a regex (true) or a division (false). */
-	isSlashRegex(): boolean {
-    const lastToken = super.nextToken();
-
-    if (lastToken == null) {
-        return true;
-    }
-
-    // @ts-ignore
-    switch (lastToken._type) {
-      case PainlessLexer.RBRACE:
-      case PainlessLexer.RP:
-      case PainlessLexer.OCTAL:
-      case PainlessLexer.HEX:
-      case PainlessLexer.INTEGER:
-      case PainlessLexer.DECIMAL:
-      case PainlessLexer.ID:
-      case PainlessLexer.DOTINTEGER:
-      case PainlessLexer.DOTID:
-        return false;
-      default:
-        return true;
-    }
-  }
 
 	constructor(input: CharStream) {
     super(input);
@@ -208,9 +181,13 @@ export class PainlessLexer extends Lexer {
 	// @Override
 	public sempred(_localctx: RuleContext, ruleIndex: number, predIndex: number): boolean {
 		switch (ruleIndex) {
+    // Note: I manually changed this from 30 to 31
+    // In PainlessParser.tokens, 30=MUL and 31=DIV
 		case 31:
 			return this.DIV_sempred(_localctx, predIndex);
 
+    // Note: I manually changed this from 76 to 77
+    // In PainlessParser.tokens, 76=STRING and 77=REGEX
 		case 77:
 			return this.REGEX_sempred(_localctx, predIndex);
 		}
@@ -219,6 +196,7 @@ export class PainlessLexer extends Lexer {
 	private DIV_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 0:
+      // @ts-ignore
       return this.isSlashRegex() === false;
 		}
 		return true;
@@ -226,6 +204,7 @@ export class PainlessLexer extends Lexer {
 	private REGEX_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 1:
+      // @ts-ignore
 			return  this.isSlashRegex();
 		}
 		return true;

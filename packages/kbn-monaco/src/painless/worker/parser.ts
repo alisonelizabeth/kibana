@@ -17,14 +17,44 @@
  * under the License.
  */
 
-import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
+import { ANTLRInputStream, CommonTokenStream, CharStream } from 'antlr4ts';
 import { PainlessParser } from '../antlr/PainlessParser';
 import { PainlessLexer } from '../antlr/PainlessLexer';
 import { PainlessError, PainlessErrorService } from './services';
 
+class PainlessLexerEnhanced extends PainlessLexer {
+  constructor(input: CharStream) {
+    super(input);
+  }
+
+  isSlashRegex(): boolean {
+    const lastToken = super.nextToken();
+
+    if (lastToken == null) {
+      return true;
+    }
+
+    // @ts-ignore
+    switch (lastToken._type) {
+      case PainlessLexer.RBRACE:
+      case PainlessLexer.RP:
+      case PainlessLexer.OCTAL:
+      case PainlessLexer.HEX:
+      case PainlessLexer.INTEGER:
+      case PainlessLexer.DECIMAL:
+      case PainlessLexer.ID:
+      case PainlessLexer.DOTINTEGER:
+      case PainlessLexer.DOTID:
+        return false;
+      default:
+        return true;
+    }
+  }
+}
+
 const parse = (code: string) => {
   const inputStream = new ANTLRInputStream(code);
-  const lexer = new PainlessLexer(inputStream);
+  const lexer = new PainlessLexerEnhanced(inputStream);
   // @ts-ignore
   lexer.removeErrorListeners();
   const painlessLangErrorListener = new PainlessErrorService();

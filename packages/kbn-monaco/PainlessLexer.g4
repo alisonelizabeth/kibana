@@ -19,30 +19,6 @@
 
 lexer grammar PainlessLexer;
 
-@members {
-/** Is the preceding {@code /} a the beginning of a regex (true) or a division (false). */
-isSlashRegex(): boolean {
-        const lastToken = super.nextToken();
-        if (lastToken == null) {
-            return true;
-        }
-        switch (lastToken._type) {
-        case PainlessLexer.RBRACE:
-        case PainlessLexer.RP:
-        case PainlessLexer.OCTAL:
-        case PainlessLexer.HEX:
-        case PainlessLexer.INTEGER:
-        case PainlessLexer.DECIMAL:
-        case PainlessLexer.ID:
-        case PainlessLexer.DOTINTEGER:
-        case PainlessLexer.DOTID:
-            return false;
-        default:
-            return true;
-        }
-    }
-}
-
 WS: [ \t\n\r]+ -> skip;
 COMMENT: ( '//' .*? [\n\r] | '/*' .*? '*/' ) -> skip;
 
@@ -79,7 +55,7 @@ INSTANCEOF: 'instanceof';
 BOOLNOT: '!';
 BWNOT:   '~';
 MUL:     '*';
-DIV:     '/' { isSlashRegex() == false }?;
+DIV:     '/' { this.isSlashRegex() == false }?;
 REM:     '%';
 ADD:     '+';
 SUB:     '-';
@@ -128,7 +104,7 @@ INTEGER: ( '0' | [1-9] [0-9]* ) [lLfFdD]?;
 DECIMAL: ( '0' | [1-9] [0-9]* ) (DOT [0-9]+)? ( [eE] [+\-]? [0-9]+ )? [fFdD]?;
 
 STRING: ( '"' ( '\\"' | '\\\\' | ~[\\"] )*? '"' ) | ( '\'' ( '\\\'' | '\\\\' | ~[\\'] )*? '\'' );
-REGEX: '/' ( '\\' ~'\n' | ~('/' | '\n') )+? '/' [cilmsUux]* { isSlashRegex() }?;
+REGEX: '/' ( '\\' ~'\n' | ~('/' | '\n') )+? '/' [cilmsUux]* { this.isSlashRegex() }?;
 
 TRUE:  'true';
 FALSE: 'false';

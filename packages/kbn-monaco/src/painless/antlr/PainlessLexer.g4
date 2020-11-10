@@ -19,11 +19,6 @@
 
 lexer grammar PainlessLexer;
 
-@members {
-/** Is the preceding {@code /} a the beginning of a regex (true) or a division (false). */
-protected abstract boolean isSlashRegex();
-}
-
 WS: [ \t\n\r]+ -> skip;
 COMMENT: ( '//' .*? [\n\r] | '/*' .*? '*/' ) -> skip;
 
