@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Generated from ./PainlessParser.g4 by ANTLR 4.7.3-SNAPSHOT
 
 

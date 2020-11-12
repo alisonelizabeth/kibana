@@ -1,17 +1,18 @@
+// @ts-nocheck
 // Generated from ./PainlessParser.g4 by ANTLR 4.7.3-SNAPSHOT
 
 
 import { ATN } from "antlr4ts/atn/ATN";
 import { ATNDeserializer } from "antlr4ts/atn/ATNDeserializer";
 import { FailedPredicateException } from "antlr4ts/FailedPredicateException";
-// import { NotNull } from "antlr4ts/Decorators";
+import { NotNull } from "antlr4ts/Decorators";
 import { NoViableAltException } from "antlr4ts/NoViableAltException";
-// import { Override } from "antlr4ts/Decorators";
+import { Override } from "antlr4ts/Decorators";
 import { Parser } from "antlr4ts/Parser";
 import { ParserRuleContext } from "antlr4ts/ParserRuleContext";
 import { ParserATNSimulator } from "antlr4ts/atn/ParserATNSimulator";
-// import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
-// import { ParseTreeVisitor } from "antlr4ts/tree/ParseTreeVisitor";
+import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
+import { ParseTreeVisitor } from "antlr4ts/tree/ParseTreeVisitor";
 import { RecognitionException } from "antlr4ts/RecognitionException";
 import { RuleContext } from "antlr4ts/RuleContext";
 //import { RuleVersion } from "antlr4ts/RuleVersion";
@@ -152,37 +153,37 @@ export class PainlessParser extends Parser {
 	public static readonly RULE_funcref = 38;
 	// tslint:disable:no-trailing-whitespace
 	public static readonly ruleNames: string[] = [
-		"source", "function", "parameters", "statement", "rstatement", "dstatement",
-		"trailer", "block", "empty", "initializer", "afterthought", "declaration",
-		"decltype", "type", "declvar", "trap", "noncondexpression", "expression",
-		"unary", "unarynotaddsub", "castexpression", "primordefcasttype", "refcasttype",
-		"chain", "primary", "postfix", "postdot", "callinvoke", "fieldaccess",
-		"braceaccess", "arrayinitializer", "listinitializer", "mapinitializer",
+		"source", "function", "parameters", "statement", "rstatement", "dstatement", 
+		"trailer", "block", "empty", "initializer", "afterthought", "declaration", 
+		"decltype", "type", "declvar", "trap", "noncondexpression", "expression", 
+		"unary", "unarynotaddsub", "castexpression", "primordefcasttype", "refcasttype", 
+		"chain", "primary", "postfix", "postdot", "callinvoke", "fieldaccess", 
+		"braceaccess", "arrayinitializer", "listinitializer", "mapinitializer", 
 		"maptoken", "arguments", "argument", "lambda", "lamtype", "funcref",
 	];
 
 	private static readonly _LITERAL_NAMES: Array<string | undefined> = [
-		undefined, undefined, undefined, "'{'", "'}'", "'['", "']'", "'('", "')'",
-		"'.'", "'?.'", "','", "';'", "'if'", "'in'", "'else'", "'while'", "'do'",
-		"'for'", "'continue'", "'break'", "'return'", "'new'", "'try'", "'catch'",
-		"'throw'", "'this'", "'instanceof'", "'!'", "'~'", "'*'", "'/'", "'%'",
-		"'+'", "'-'", "'<<'", "'>>'", "'>>>'", "'<'", "'<='", "'>'", "'>='", "'=='",
-		"'==='", "'!='", "'!=='", "'&'", "'^'", "'|'", "'&&'", "'||'", "'?'",
-		"':'", "'?:'", "'::'", "'->'", "'=~'", "'==~'", "'++'", "'--'", "'='",
-		"'+='", "'-='", "'*='", "'/='", "'%='", "'&='", "'^='", "'|='", "'<<='",
-		"'>>='", "'>>>='", undefined, undefined, undefined, undefined, undefined,
+		undefined, undefined, undefined, "'{'", "'}'", "'['", "']'", "'('", "')'", 
+		"'.'", "'?.'", "','", "';'", "'if'", "'in'", "'else'", "'while'", "'do'", 
+		"'for'", "'continue'", "'break'", "'return'", "'new'", "'try'", "'catch'", 
+		"'throw'", "'this'", "'instanceof'", "'!'", "'~'", "'*'", "'/'", "'%'", 
+		"'+'", "'-'", "'<<'", "'>>'", "'>>>'", "'<'", "'<='", "'>'", "'>='", "'=='", 
+		"'==='", "'!='", "'!=='", "'&'", "'^'", "'|'", "'&&'", "'||'", "'?'", 
+		"':'", "'?:'", "'::'", "'->'", "'=~'", "'==~'", "'++'", "'--'", "'='", 
+		"'+='", "'-='", "'*='", "'/='", "'%='", "'&='", "'^='", "'|='", "'<<='", 
+		"'>>='", "'>>>='", undefined, undefined, undefined, undefined, undefined, 
 		undefined, "'true'", "'false'", "'null'", undefined, "'def'",
 	];
 	private static readonly _SYMBOLIC_NAMES: Array<string | undefined> = [
-		undefined, "WS", "COMMENT", "LBRACK", "RBRACK", "LBRACE", "RBRACE", "LP",
-		"RP", "DOT", "NSDOT", "COMMA", "SEMICOLON", "IF", "IN", "ELSE", "WHILE",
-		"DO", "FOR", "CONTINUE", "BREAK", "RETURN", "NEW", "TRY", "CATCH", "THROW",
-		"THIS", "INSTANCEOF", "BOOLNOT", "BWNOT", "MUL", "DIV", "REM", "ADD",
-		"SUB", "LSH", "RSH", "USH", "LT", "LTE", "GT", "GTE", "EQ", "EQR", "NE",
-		"NER", "BWAND", "XOR", "BWOR", "BOOLAND", "BOOLOR", "COND", "COLON", "ELVIS",
-		"REF", "ARROW", "FIND", "MATCH", "INCR", "DECR", "ASSIGN", "AADD", "ASUB",
-		"AMUL", "ADIV", "AREM", "AAND", "AXOR", "AOR", "ALSH", "ARSH", "AUSH",
-		"OCTAL", "HEX", "INTEGER", "DECIMAL", "STRING", "REGEX", "TRUE", "FALSE",
+		undefined, "WS", "COMMENT", "LBRACK", "RBRACK", "LBRACE", "RBRACE", "LP", 
+		"RP", "DOT", "NSDOT", "COMMA", "SEMICOLON", "IF", "IN", "ELSE", "WHILE", 
+		"DO", "FOR", "CONTINUE", "BREAK", "RETURN", "NEW", "TRY", "CATCH", "THROW", 
+		"THIS", "INSTANCEOF", "BOOLNOT", "BWNOT", "MUL", "DIV", "REM", "ADD", 
+		"SUB", "LSH", "RSH", "USH", "LT", "LTE", "GT", "GTE", "EQ", "EQR", "NE", 
+		"NER", "BWAND", "XOR", "BWOR", "BOOLAND", "BOOLOR", "COND", "COLON", "ELVIS", 
+		"REF", "ARROW", "FIND", "MATCH", "INCR", "DECR", "ASSIGN", "AADD", "ASUB", 
+		"AMUL", "ADIV", "AREM", "AAND", "AXOR", "AOR", "ALSH", "ARSH", "AUSH", 
+		"OCTAL", "HEX", "INTEGER", "DECIMAL", "STRING", "REGEX", "TRUE", "FALSE", 
 		"NULL", "PRIMITIVE", "DEF", "ID", "DOTINTEGER", "DOTID",
 	];
 	public static readonly VOCABULARY: Vocabulary = new VocabularyImpl(PainlessParser._LITERAL_NAMES, PainlessParser._SYMBOLIC_NAMES, []);
@@ -200,8 +201,7 @@ export class PainlessParser extends Parser {
 	// @Override
 	public get ruleNames(): string[] { return PainlessParser.ruleNames; }
 
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get serializedATN(): string { return PainlessParser._serializedATN; }
 
 	constructor(input: TokenStream) {
@@ -474,8 +474,8 @@ export class PainlessParser extends Parser {
 				case 2:
 					{
 					this.state = 126;
-					if (!( this._input.LA(1) != PainlessParser.ELSE )) {
-						throw new FailedPredicateException(this, " _input.LA(1) != ELSE ");
+					if (!( _input.LA(1) != PainlessParser.ELSE )) {
+						throw new FailedPredicateException(this, " _input.LA(1) != PainlessParser.ELSE ");
 					}
 					}
 					break;
@@ -1291,8 +1291,7 @@ export class PainlessParser extends Parser {
 
 		let _parentctx: ParserRuleContext = this._ctx;
 		let _parentState: number = this.state;
-    let _localctx: NoncondexpressionContext = new NoncondexpressionContext(this._ctx, _parentState);
-    // @ts-ignore
+		let _localctx: NoncondexpressionContext = new NoncondexpressionContext(this._ctx, _parentState);
 		let _prevctx: NoncondexpressionContext = _localctx;
 		let _startState: number = 32;
 		this.enterRecursionRule(_localctx, 32, PainlessParser.RULE_noncondexpression, _p);
@@ -3088,7 +3087,7 @@ export class PainlessParser extends Parser {
 	private rstatement_sempred(_localctx: RstatementContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 0:
-			return  this._input.LA(1) != PainlessParser.ELSE ;
+			return  _input.LA(1) != PainlessParser.ELSE ;
 		}
 		return true;
 	}
@@ -3136,7 +3135,6 @@ export class PainlessParser extends Parser {
 		return true;
 	}
 
-  // @ts-ignore
 	private static readonly _serializedATNSegments: number = 2;
 	private static readonly _serializedATNSegment0: string =
 		"\x03\uC91D\uCABA\u058D\uAFBA\u4F53\u0607\uEA8B\uC241\x03W\u023E\x04\x02" +
@@ -3472,8 +3470,7 @@ export class SourceContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_source; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -3504,8 +3501,7 @@ export class FunctionContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_function; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -3555,8 +3551,7 @@ export class ParametersContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_parameters; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -3585,8 +3580,7 @@ export class StatementContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_statement; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -3607,8 +3601,7 @@ export class RstatementContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_rstatement; }
 	public copyFrom(ctx: RstatementContext): void {
 		super.copyFrom(ctx);
@@ -3821,8 +3814,7 @@ export class DstatementContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_dstatement; }
 	public copyFrom(ctx: DstatementContext): void {
 		super.copyFrom(ctx);
@@ -3992,8 +3984,7 @@ export class TrailerContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_trailer; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4028,8 +4019,7 @@ export class BlockContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_block; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4051,8 +4041,7 @@ export class EmptyContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_empty; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4079,8 +4068,7 @@ export class InitializerContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_initializer; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4104,8 +4092,7 @@ export class AfterthoughtContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_afterthought; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4147,8 +4134,7 @@ export class DeclarationContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_declaration; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4190,8 +4176,7 @@ export class DecltypeContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_decltype; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4233,8 +4218,7 @@ export class TypeContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_type; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4260,8 +4244,7 @@ export class DeclvarContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_declvar; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4292,8 +4275,7 @@ export class TrapContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_trap; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4314,8 +4296,7 @@ export class NoncondexpressionContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_noncondexpression; }
 	public copyFrom(ctx: NoncondexpressionContext): void {
 		super.copyFrom(ctx);
@@ -4505,8 +4486,7 @@ export class ExpressionContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_expression; }
 	public copyFrom(ctx: ExpressionContext): void {
 		super.copyFrom(ctx);
@@ -4607,8 +4587,7 @@ export class UnaryContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_unary; }
 	public copyFrom(ctx: UnaryContext): void {
 		super.copyFrom(ctx);
@@ -4687,8 +4666,7 @@ export class UnarynotaddsubContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_unarynotaddsub; }
 	public copyFrom(ctx: UnarynotaddsubContext): void {
 		super.copyFrom(ctx);
@@ -4788,8 +4766,7 @@ export class CastexpressionContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_castexpression; }
 	public copyFrom(ctx: CastexpressionContext): void {
 		super.copyFrom(ctx);
@@ -4855,8 +4832,7 @@ export class PrimordefcasttypeContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_primordefcasttype; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4916,8 +4892,7 @@ export class RefcasttypeContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_refcasttype; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -4938,8 +4913,7 @@ export class ChainContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_chain; }
 	public copyFrom(ctx: ChainContext): void {
 		super.copyFrom(ctx);
@@ -5002,8 +4976,7 @@ export class PrimaryContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_primary; }
 	public copyFrom(ctx: PrimaryContext): void {
 		super.copyFrom(ctx);
@@ -5272,8 +5245,7 @@ export class PostfixContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_postfix; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5300,8 +5272,7 @@ export class PostdotContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_postdot; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5328,8 +5299,7 @@ export class CallinvokeContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_callinvoke; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5354,8 +5324,7 @@ export class FieldaccessContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_fieldaccess; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5381,8 +5350,7 @@ export class BraceaccessContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_braceaccess; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5403,8 +5371,7 @@ export class ArrayinitializerContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_arrayinitializer; }
 	public copyFrom(ctx: ArrayinitializerContext): void {
 		super.copyFrom(ctx);
@@ -5550,8 +5517,7 @@ export class ListinitializerContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_listinitializer; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5593,8 +5559,7 @@ export class MapinitializerContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_mapinitializer; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5625,8 +5590,7 @@ export class MaptokenContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_maptoken; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5667,8 +5631,7 @@ export class ArgumentsContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_arguments; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5698,8 +5661,7 @@ export class ArgumentContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_argument; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5747,8 +5709,7 @@ export class LambdaContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_lambda; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5773,8 +5734,7 @@ export class LamtypeContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_lamtype; }
 	// @Override
 	public enterRule(listener: PainlessParserListener): void {
@@ -5795,8 +5755,7 @@ export class FuncrefContext extends ParserRuleContext {
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
-  // @Override
-  // @ts-ignore
+	// @Override
 	public get ruleIndex(): number { return PainlessParser.RULE_funcref; }
 	public copyFrom(ctx: FuncrefContext): void {
 		super.copyFrom(ctx);
