@@ -40,7 +40,7 @@ export class PainlessErrorService implements ANTLRErrorListener<any> {
   ): void {
     let endColumn = column + 1;
 
-    if (offendingSymbol._text) {
+    if (offendingSymbol?._text) {
       endColumn = column + offendingSymbol._text.length;
     }
 

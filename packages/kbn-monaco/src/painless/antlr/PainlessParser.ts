@@ -474,8 +474,8 @@ export class PainlessParser extends Parser {
 				case 2:
 					{
 					this.state = 126;
-					if (!( _input.LA(1) != PainlessParser.ELSE )) {
-						throw new FailedPredicateException(this, " _input.LA(1) != PainlessParser.ELSE ");
+					if (!( this._input.LA(1) != PainlessParser.ELSE )) {
+						throw new FailedPredicateException(this, " this._input.LA(1) != PainlessParser.ELSE ");
 					}
 					}
 					break;
@@ -3087,7 +3087,7 @@ export class PainlessParser extends Parser {
 	private rstatement_sempred(_localctx: RstatementContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 0:
-			return  _input.LA(1) != PainlessParser.ELSE ;
+			return  this._input.LA(1) != PainlessParser.ELSE ;
 		}
 		return true;
 	}
