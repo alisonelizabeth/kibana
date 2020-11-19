@@ -20,16 +20,9 @@
 import { monaco } from '../../monaco_imports';
 import { PainlessCompletionResult, PainlessContext, Field } from '../types';
 
-import { PainlessCompletionService } from './services';
+import { getAutocompleteSuggestions } from './lib';
+
 import { parseAndGetSyntaxErrors } from './parser';
-
-import {
-  isDeclaringField,
-  isConstructorInstance,
-  isAccessingProperty,
-  showStaticSuggestions,
-} from './utils';
-
 export class PainlessWorker {
   private _ctx: monaco.worker.IWorkerContext;
 
@@ -42,43 +35,28 @@ export class PainlessWorker {
     return model.getValue();
   }
 
-  async getSyntaxErrors() {
+  public async getSyntaxErrors() {
     const code = this.getTextDocument();
     const syntaxErrors = parseAndGetSyntaxErrors(code);
     return syntaxErrors;
   }
 
-  async provideAutocompleteSuggestions(
+  public provideAutocompleteSuggestions(
     currentLineChars: string,
     context: PainlessContext,
     fields?: Field[]
-  ): Promise<PainlessCompletionResult> {
-    const code = this.getTextDocument();
-    const completionService = new PainlessCompletionService(context, code);
-
+  ): PainlessCompletionResult {
     // Array of the active line words, e.g., [boolean, isTrue, =, true]
     const words = currentLineChars.replace('\t', '').split(' ');
-    // What the user is currently typing
-    const activeTyping = words[words.length - 1];
+    const code = this.getTextDocument();
 
-    const primitives = completionService.getPrimitives();
+    const autocompleteSuggestions: PainlessCompletionResult = getAutocompleteSuggestions(
+      context,
+      words,
+      code,
+      fields
+    );
 
-    let autocompleteSuggestions: PainlessCompletionResult = {
-      isIncomplete: false,
-      suggestions: [],
-    };
-
-    if (isConstructorInstance(words)) {
-      autocompleteSuggestions = completionService.getConstructorSuggestions();
-    } else if (fields && isDeclaringField(activeTyping)) {
-      autocompleteSuggestions = completionService.getFieldSuggestions(fields);
-    } else if (isAccessingProperty(activeTyping)) {
-      const className = activeTyping.substring(0, activeTyping.length - 1).split('.')[0];
-      autocompleteSuggestions = completionService.getClassMemberSuggestions(className);
-    } else if (showStaticSuggestions(activeTyping, words, primitives)) {
-      autocompleteSuggestions = completionService.getStaticSuggestions(Boolean(fields?.length));
-    }
-
-    return Promise.resolve(autocompleteSuggestions);
+    return autocompleteSuggestions;
   }
 }

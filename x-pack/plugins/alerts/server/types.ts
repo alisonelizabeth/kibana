@@ -27,6 +27,7 @@ import {
   AlertInstanceState,
   AlertExecutionStatuses,
   AlertExecutionStatusErrorReasons,
+  AlertsHealth,
 } from '../common';
 
 export type WithoutQueryAndParams<T> = Pick<T, Exclude<keyof T, 'query' | 'params'>>;
@@ -39,6 +40,7 @@ declare module 'src/core/server' {
     alerting?: {
       getAlertsClient: () => AlertsClient;
       listTypes: AlertTypeRegistry['list'];
+      getFrameworkHealth: () => Promise<AlertsHealth>;
     };
   }
 }
@@ -170,6 +172,24 @@ export type AlertInfoParams = Pick<
 export interface AlertingPlugin {
   setup: PluginSetupContract;
   start: PluginStartContract;
+}
+
+export interface AlertsConfigType {
+  healthCheck: {
+    interval: string;
+  };
+}
+
+export interface AlertsConfigType {
+  invalidateApiKeysTask: {
+    interval: string;
+    removalDelay: string;
+  };
+}
+
+export interface InvalidatePendingApiKey {
+  apiKeyId: string;
+  createdAt: string;
 }
 
 export type AlertTypeRegistry = PublicMethodsOf<OrigAlertTypeRegistry>;
