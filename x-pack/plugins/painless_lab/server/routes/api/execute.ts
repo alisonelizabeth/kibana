@@ -7,7 +7,6 @@ import { schema } from '@kbn/config-schema';
 
 import { API_BASE_PATH } from '../../../common/constants';
 import { RouteDependencies } from '../../types';
-import { isEsError } from '../../shared_imports';
 
 const bodySchema = schema.string();
 
@@ -23,8 +22,8 @@ export function registerExecuteRoute({ router, license }: RouteDependencies) {
       const body = req.body;
 
       try {
-        const callAsCurrentUser = ctx.core.elasticsearch.legacy.client.callAsCurrentUser;
-        const response = await callAsCurrentUser('scriptsPainlessExecute', {
+        const client = ctx.core.elasticsearch.client.asCurrentUser;
+        const response = await client.scriptsPainlessExecute({
           body,
         });
 
@@ -32,7 +31,8 @@ export function registerExecuteRoute({ router, license }: RouteDependencies) {
           body: response,
         });
       } catch (e) {
-        if (isEsError(e)) {
+        // TODO update handle_es_error to allow custom response?
+        if (e.name === 'ResponseError') {
           // Assume invalid painless script was submitted
           // Return 200 with error object
           return res.ok({
