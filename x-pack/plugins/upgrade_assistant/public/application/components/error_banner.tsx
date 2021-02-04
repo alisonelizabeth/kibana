@@ -10,7 +10,7 @@ import React from 'react';
 import { EuiCallOut } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 
-import { UpgradeAssistantTabProps } from './types';
+import { UpgradeAssistantTabProps } from '../types';
 
 export const LoadingErrorBanner: React.FunctionComponent<
   Pick<UpgradeAssistantTabProps, 'loadingError'>

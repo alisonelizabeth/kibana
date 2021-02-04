@@ -28,7 +28,7 @@ export enum ReindexStatus {
 
 export const REINDEX_OP_TYPE = 'upgrade-assistant-reindex-operation';
 
-export interface QueueSettings extends SavedObjectAttributes {
+interface QueueSettings extends SavedObjectAttributes {
   /**
    * A Unix timestamp of when the reindex operation was enqueued.
    *

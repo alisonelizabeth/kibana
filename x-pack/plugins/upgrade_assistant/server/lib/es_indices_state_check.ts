@@ -5,8 +5,8 @@
  */
 
 import { ElasticsearchClient } from 'kibana/server';
-import { getIndexState } from '../../common/get_index_state';
 import { ResolveIndexResponseFromES } from '../../common/types';
+import { getIndexState } from './get_index_state';
 
 type StatusCheckResult = Record<string, 'open' | 'closed'>;
 
