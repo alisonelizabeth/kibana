@@ -72,6 +72,7 @@ export class ReindexPollingService {
       this.status$.next({
         ...this.status$.value,
         status: ReindexStatus.failed,
+        loadingState: LoadingState.Error,
       });
     }
   };
@@ -104,7 +105,11 @@ export class ReindexPollingService {
       this.updateWithResponse({ reindexOp: data });
       this.updateStatus();
     } catch (e) {
-      this.status$.next({ ...this.status$.value, status: ReindexStatus.failed });
+      this.status$.next({
+        ...this.status$.value,
+        status: ReindexStatus.failed,
+        loadingState: LoadingState.Error,
+      });
     }
   };
 

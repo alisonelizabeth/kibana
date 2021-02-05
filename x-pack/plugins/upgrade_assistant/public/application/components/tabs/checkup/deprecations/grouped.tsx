@@ -181,26 +181,20 @@ export class GroupedDeprecations extends React.Component<
             <EuiButtonEmpty
               flush="left"
               size="s"
-              onClick={() => this.setExpand(true)}
-              data-test-subj="expandAll"
+              onClick={() => this.setExpand(!this.state.forceExpand)}
+              data-test-subj="toggleAccordionList"
             >
-              <FormattedMessage
-                id="xpack.upgradeAssistant.checkupTab.controls.expandAllButtonLabel"
-                defaultMessage="Expand all"
-              />
-            </EuiButtonEmpty>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiButtonEmpty
-              flush="left"
-              size="s"
-              onClick={() => this.setExpand(false)}
-              data-test-subj="collapseAll"
-            >
-              <FormattedMessage
-                id="xpack.upgradeAssistant.checkupTab.controls.collapseAllButtonLabel"
-                defaultMessage="Collapse all"
-              />
+              {this.state.forceExpand ? (
+                <FormattedMessage
+                  id="xpack.upgradeAssistant.checkupTab.controls.collapseAllButtonLabel"
+                  defaultMessage="Collapse all"
+                />
+              ) : (
+                <FormattedMessage
+                  id="xpack.upgradeAssistant.checkupTab.controls.expandAllButtonLabel"
+                  defaultMessage="Expand all"
+                />
+              )}
             </EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem />

@@ -10,7 +10,16 @@ import React, { Fragment, ReactNode } from 'react';
 import { i18n } from '@kbn/i18n';
 import { Subscription } from 'rxjs';
 
-import { EuiButton, EuiLoadingSpinner, EuiText, EuiToolTip } from '@elastic/eui';
+import {
+  EuiButton,
+  EuiLoadingSpinner,
+  EuiText,
+  EuiTextColor,
+  EuiToolTip,
+  EuiIcon,
+  EuiFlexGroup,
+  EuiFlexItem,
+} from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { DocLinksStart, HttpSetup } from 'src/core/public';
 import {
@@ -73,6 +82,7 @@ export class ReindexButton extends React.Component<ReindexButtonProps, ReindexBu
     const { flyoutVisible, reindexState } = this.state;
 
     const buttonProps: any = { size: 's', onClick: this.showFlyout };
+
     let buttonContent: ReactNode = (
       <FormattedMessage
         id="xpack.upgradeAssistant.checkupTab.reindexing.reindexButton.reindexLabel"
@@ -80,8 +90,28 @@ export class ReindexButton extends React.Component<ReindexButtonProps, ReindexBu
       />
     );
 
+    if (reindexState.loadingState === LoadingState.Error) {
+      return (
+        <EuiFlexGroup gutterSize="xs" alignItems="center">
+          <EuiFlexItem grow={false}>
+            <EuiIcon type="alert" color="danger" />
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiText>
+              <EuiTextColor color="danger">
+                <FormattedMessage
+                  id="xpack.upgradeAssistant.checkupTab.reindexing.loadingIndexErrorMessage"
+                  defaultMessage="Error loading index"
+                />
+              </EuiTextColor>
+            </EuiText>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      );
+    }
+
     if (reindexState.loadingState === LoadingState.Loading) {
-      buttonProps.disabled = true;
+      buttonProps.isLoading = true;
       buttonContent = (
         <FormattedMessage
           id="xpack.upgradeAssistant.checkupTab.reindexing.reindexButton.loadingLabel"

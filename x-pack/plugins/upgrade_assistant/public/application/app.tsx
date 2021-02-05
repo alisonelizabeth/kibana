@@ -7,7 +7,15 @@
 
 import React from 'react';
 import { I18nStart } from 'src/core/public';
-import { EuiPageHeader, EuiPageHeaderSection, EuiTitle } from '@elastic/eui';
+import {
+  EuiButtonEmpty,
+  EuiPageBody,
+  EuiPageContent,
+  EuiPageContentBody,
+  EuiPageContentHeader,
+  EuiPageContentHeaderSection,
+  EuiTitle,
+} from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { UpgradeAssistantTabs } from './components/tabs';
 import { AppContextProvider, ContextValue, AppContext } from './app_context';
@@ -17,13 +25,16 @@ export interface AppDependencies extends ContextValue {
 }
 
 export const RootComponent = ({ i18n, ...contextValue }: AppDependencies) => {
-  const { nextMajor } = contextValue.kibanaVersionInfo;
+  const { docLinks, kibanaVersionInfo } = contextValue;
+  const { nextMajor } = kibanaVersionInfo;
+  const { DOC_LINK_VERSION, ELASTIC_WEBSITE_URL } = docLinks;
+
   return (
     <i18n.Context>
-      <AppContextProvider value={contextValue}>
-        <div data-test-subj="upgradeAssistantRoot">
-          <EuiPageHeader>
-            <EuiPageHeaderSection>
+      <EuiPageBody>
+        <EuiPageContent>
+          <EuiPageContentHeader>
+            <EuiPageContentHeaderSection>
               <EuiTitle size="l">
                 <h1>
                   <FormattedMessage
@@ -33,13 +44,30 @@ export const RootComponent = ({ i18n, ...contextValue }: AppDependencies) => {
                   />
                 </h1>
               </EuiTitle>
-            </EuiPageHeaderSection>
-          </EuiPageHeader>
-          <AppContext.Consumer>
-            {({ http }) => <UpgradeAssistantTabs http={http} />}
-          </AppContext.Consumer>
-        </div>
-      </AppContextProvider>
+            </EuiPageContentHeaderSection>
+            <EuiPageContentHeaderSection>
+              <EuiButtonEmpty
+                href={`${ELASTIC_WEBSITE_URL}guide/en/kibana/${DOC_LINK_VERSION}/upgrade-assistant.html`}
+                target="_blank"
+                iconType="help"
+                data-test-subj="documentationLink"
+              >
+                <FormattedMessage
+                  id="xpack.upgradeAssistant.upgradeAssistantDocsLinkText"
+                  defaultMessage="Upgrade Assistant docs"
+                />
+              </EuiButtonEmpty>
+            </EuiPageContentHeaderSection>
+          </EuiPageContentHeader>
+          <EuiPageContentBody>
+            <AppContextProvider value={contextValue}>
+              <AppContext.Consumer>
+                {({ http }) => <UpgradeAssistantTabs http={http} />}
+              </AppContext.Consumer>
+            </AppContextProvider>
+          </EuiPageContentBody>
+        </EuiPageContent>
+      </EuiPageBody>
     </i18n.Context>
   );
 };

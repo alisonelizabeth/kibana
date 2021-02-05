@@ -8,15 +8,7 @@
 import { find } from 'lodash';
 import React, { FunctionComponent, useState } from 'react';
 
-import {
-  EuiCallOut,
-  EuiEmptyPrompt,
-  EuiLink,
-  EuiPageContent,
-  EuiPageContentBody,
-  EuiSpacer,
-  EuiText,
-} from '@elastic/eui';
+import { EuiCallOut, EuiEmptyPrompt, EuiLink, EuiSpacer, EuiText } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 
 import { LoadingErrorBanner } from '../../error_banner';
@@ -153,70 +145,68 @@ export const CheckupTab: FunctionComponent<CheckupTabProps> = ({
         </>
       )}
 
-      <EuiPageContent>
-        <EuiPageContentBody>
-          {loadingState === LoadingState.Error ? (
-            <LoadingErrorBanner loadingError={loadingError} />
-          ) : deprecations && deprecations.length > 0 ? (
-            <>
-              <CheckupControls
-                allDeprecations={deprecations}
-                loadingState={loadingState}
-                loadData={refreshCheckupData}
-                currentFilter={currentFilter}
-                onFilterChange={changeFilter}
-                onSearchChange={changeSearch}
-                availableGroupByOptions={availableGroupByOptions()}
-                currentGroupBy={currentGroupBy}
-                onGroupByChange={changeGroupBy}
-              />
-              <EuiSpacer />
-              {renderCheckupData()}
-            </>
-          ) : (
-            <EuiEmptyPrompt
-              iconType="faceHappy"
-              title={
-                <h2>
-                  <FormattedMessage
-                    id="xpack.upgradeAssistant.checkupTab.noIssues.noIssuesTitle"
-                    defaultMessage="All clear!"
-                  />
-                </h2>
-              }
-              body={
-                <>
-                  <p data-test-subj="upgradeAssistantIssueSummary">
-                    <FormattedMessage
-                      id="xpack.upgradeAssistant.checkupTab.noIssues.noIssuesLabel"
-                      defaultMessage="You have no {strongCheckupLabel} issues."
-                      values={{
-                        strongCheckupLabel: <strong>{checkupLabel}</strong>,
-                      }}
-                    />
-                  </p>
-                  <p>
-                    <FormattedMessage
-                      id="xpack.upgradeAssistant.checkupTab.noIssues.nextStepsDetail"
-                      defaultMessage="Check the {overviewTabButton} for next steps."
-                      values={{
-                        overviewTabButton: (
-                          <EuiLink onClick={() => setSelectedTabIndex(0)}>
-                            <FormattedMessage
-                              id="xpack.upgradeAssistant.checkupTab.noIssues.nextStepsDetail.overviewTabButtonLabel"
-                              defaultMessage="Overview tab"
-                            />
-                          </EuiLink>
-                        ),
-                      }}
-                    />
-                  </p>
-                </>
-              }
+      <>
+        {loadingState === LoadingState.Error ? (
+          <LoadingErrorBanner loadingError={loadingError} />
+        ) : deprecations && deprecations.length > 0 ? (
+          <>
+            <CheckupControls
+              allDeprecations={deprecations}
+              loadingState={loadingState}
+              loadData={refreshCheckupData}
+              currentFilter={currentFilter}
+              onFilterChange={changeFilter}
+              onSearchChange={changeSearch}
+              availableGroupByOptions={availableGroupByOptions()}
+              currentGroupBy={currentGroupBy}
+              onGroupByChange={changeGroupBy}
             />
-          )}
-        </EuiPageContentBody>
-      </EuiPageContent>
+            <EuiSpacer />
+            {renderCheckupData()}
+          </>
+        ) : (
+          <EuiEmptyPrompt
+            iconType="faceHappy"
+            title={
+              <h2>
+                <FormattedMessage
+                  id="xpack.upgradeAssistant.checkupTab.noIssues.noIssuesTitle"
+                  defaultMessage="All clear!"
+                />
+              </h2>
+            }
+            body={
+              <>
+                <p data-test-subj="upgradeAssistantIssueSummary">
+                  <FormattedMessage
+                    id="xpack.upgradeAssistant.checkupTab.noIssues.noIssuesLabel"
+                    defaultMessage="You have no {strongCheckupLabel} issues."
+                    values={{
+                      strongCheckupLabel: <strong>{checkupLabel}</strong>,
+                    }}
+                  />
+                </p>
+                <p>
+                  <FormattedMessage
+                    id="xpack.upgradeAssistant.checkupTab.noIssues.nextStepsDetail"
+                    defaultMessage="Check the {overviewTabButton} for next steps."
+                    values={{
+                      overviewTabButton: (
+                        <EuiLink onClick={() => setSelectedTabIndex(0)}>
+                          <FormattedMessage
+                            id="xpack.upgradeAssistant.checkupTab.noIssues.nextStepsDetail.overviewTabButtonLabel"
+                            defaultMessage="Overview tab"
+                          />
+                        </EuiLink>
+                      ),
+                    }}
+                  />
+                </p>
+              </>
+            }
+          />
+        )}
+      </>
     </>
   );
 };

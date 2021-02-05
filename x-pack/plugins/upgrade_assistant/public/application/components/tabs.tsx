@@ -7,15 +7,9 @@
 
 import { set } from '@elastic/safer-lodash-set';
 import { findIndex, get } from 'lodash';
-import React from 'react';
+import React, { useState } from 'react';
 
-import {
-  EuiEmptyPrompt,
-  EuiPageContent,
-  EuiPageContentBody,
-  EuiTabbedContent,
-  EuiTabbedContentTab,
-} from '@elastic/eui';
+import { EuiEmptyPrompt, EuiTabbedContent, EuiTabbedContentTab } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { HttpSetup } from 'src/core/public';
@@ -45,6 +39,11 @@ interface Props {
   http: HttpSetup;
 }
 
+// TODO stopping point - convert to function component
+// export const UpgradeAssistantTabs: React.FunctionComponent = () => {
+//   const [clusterUpgradeState, setClusterUpgradeState] = useState(ClusterUpgradeState.needsUpgrade)
+// }
+
 export class UpgradeAssistantTabs extends React.Component<Props, TabsState> {
   constructor(props: Props) {
     super(props);
@@ -69,56 +68,48 @@ export class UpgradeAssistantTabs extends React.Component<Props, TabsState> {
 
     if (clusterUpgradeState === ClusterUpgradeState.partiallyUpgraded) {
       return (
-        <EuiPageContent>
-          <EuiPageContentBody>
-            <EuiEmptyPrompt
-              iconType="logoElasticsearch"
-              title={
-                <h2>
-                  <FormattedMessage
-                    id="xpack.upgradeAssistant.tabs.upgradingInterstitial.upgradingTitle"
-                    defaultMessage="Your cluster is upgrading"
-                  />
-                </h2>
-              }
-              body={
-                <p>
-                  <FormattedMessage
-                    id="xpack.upgradeAssistant.tabs.upgradingInterstitial.upgradingDescription"
-                    defaultMessage="One or more Elasticsearch nodes have a newer version of
+        <EuiEmptyPrompt
+          iconType="logoElasticsearch"
+          title={
+            <h2>
+              <FormattedMessage
+                id="xpack.upgradeAssistant.tabs.upgradingInterstitial.upgradingTitle"
+                defaultMessage="Your cluster is upgrading"
+              />
+            </h2>
+          }
+          body={
+            <p>
+              <FormattedMessage
+                id="xpack.upgradeAssistant.tabs.upgradingInterstitial.upgradingDescription"
+                defaultMessage="One or more Elasticsearch nodes have a newer version of
                       Elasticsearch than Kibana. Once all your nodes are upgraded, upgrade Kibana."
-                  />
-                </p>
-              }
-            />
-          </EuiPageContentBody>
-        </EuiPageContent>
+              />
+            </p>
+          }
+        />
       );
     } else if (clusterUpgradeState === ClusterUpgradeState.upgraded) {
       return (
-        <EuiPageContent>
-          <EuiPageContentBody>
-            <EuiEmptyPrompt
-              iconType="logoElasticsearch"
-              title={
-                <h2>
-                  <FormattedMessage
-                    id="xpack.upgradeAssistant.tabs.upgradingInterstitial.upgradeCompleteTitle"
-                    defaultMessage="Your cluster has been upgraded"
-                  />
-                </h2>
-              }
-              body={
-                <p>
-                  <FormattedMessage
-                    id="xpack.upgradeAssistant.tabs.upgradingInterstitial.upgradeCompleteDescription"
-                    defaultMessage="All Elasticsearch nodes have been upgraded. You may now upgrade Kibana."
-                  />
-                </p>
-              }
-            />
-          </EuiPageContentBody>
-        </EuiPageContent>
+        <EuiEmptyPrompt
+          iconType="logoElasticsearch"
+          title={
+            <h2>
+              <FormattedMessage
+                id="xpack.upgradeAssistant.tabs.upgradingInterstitial.upgradeCompleteTitle"
+                defaultMessage="Your cluster has been upgraded"
+              />
+            </h2>
+          }
+          body={
+            <p>
+              <FormattedMessage
+                id="xpack.upgradeAssistant.tabs.upgradingInterstitial.upgradeCompleteDescription"
+                defaultMessage="All Elasticsearch nodes have been upgraded. You may now upgrade Kibana."
+              />
+            </p>
+          }
+        />
       );
     }
 

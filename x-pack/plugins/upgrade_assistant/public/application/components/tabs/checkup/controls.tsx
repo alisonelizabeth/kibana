@@ -81,14 +81,14 @@ export const CheckupControls: FunctionComponent<CheckupControlsProps> = ({
 
           <EuiFlexItem grow={false}>
             <EuiButton
-              fill
+              type="secondary"
               onClick={loadData}
               iconType="refresh"
               isLoading={loadingState === LoadingState.Loading}
             >
               <FormattedMessage
                 id="xpack.upgradeAssistant.checkupTab.controls.refreshButtonLabel"
-                defaultMessage="Refresh"
+                defaultMessage="Reload"
               />
             </EuiButton>
           </EuiFlexItem>
