@@ -5,11 +5,4 @@
  * 2.0.
  */
 
-export {
-  sendRequest,
-  SendRequestConfig,
-  SendRequestResponse,
-  useRequest,
-  UseRequestConfig,
-  SectionLoading,
-} from '../../../../src/plugins/es_ui_shared/public/';
+export { KibanaDeprecationsContent } from './kibana_deprecations';

@@ -13,26 +13,24 @@ import { EuiSpacer } from '@elastic/eui';
 
 import { GroupByOption, LevelFilterOption, UpgradeAssistantTabProps } from '../types';
 import { NoDeprecationsPrompt } from '../shared';
-import { CheckupControls } from './controls';
-import { GroupedDeprecations } from './deprecations/grouped';
-import { EsDeprecationErrors } from './es_deprecation_errors';
+import { CheckupControls } from '../es_deprecations/controls';
 import { SectionLoading } from '../../../shared_imports';
-
-const i18nTexts = {
-  isLoading: i18n.translate('xpack.upgradeAssistant.esDeprecations.loadingText', {
-    defaultMessage: 'Loading deprecations…',
-  }),
-};
 
 export interface CheckupTabProps extends UpgradeAssistantTabProps {
   checkupLabel: string;
 }
 
+const i18nTexts = {
+  isLoading: i18n.translate('xpack.upgradeAssistant.kibanaDeprecations.loadingText', {
+    defaultMessage: 'Loading deprecations…',
+  }),
+};
+
 /**
  * Displays a list of deprecations that filterable and groupable. Can be used for cluster,
  * nodes, or indices checkups.
  */
-export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
+export const KibanaDeprecationsList: FunctionComponent<CheckupTabProps> = ({
   checkupLabel,
   deprecations,
   error,
@@ -83,34 +81,28 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
         <CheckupControls
           allDeprecations={deprecations}
           isLoading={isLoading}
-          loadData={refreshCheckupData}
+          loadData={() => {}} // TODO implement
           currentFilter={currentFilter}
           onFilterChange={changeFilter}
           onSearchChange={changeSearch}
-          groupByProps={{
-            availableGroupByOptions: availableGroupByOptions(),
-            currentGroupBy,
-            onGroupByChange: changeGroupBy,
-          }}
         />
+
         <EuiSpacer />
 
-        <GroupedDeprecations
+        {/* <GroupedDeprecations
           currentGroupBy={currentGroupBy}
           currentFilter={currentFilter}
           search={search}
           allDeprecations={deprecations}
-        />
+        /> */}
       </div>
     );
   } else if (error) {
-    content = <EsDeprecationErrors error={error} />;
+    content = <div>TODO handle error</div>;
   }
-
   return (
-    <div data-test-subj={`${checkupLabel}TabContent`}>
+    <div data-test-subj="kibanaDeprecationsContent">
       <EuiSpacer />
-
       {content}
     </div>
   );

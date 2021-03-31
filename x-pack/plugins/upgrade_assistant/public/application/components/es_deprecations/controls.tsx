@@ -22,9 +22,11 @@ interface CheckupControlsProps {
   currentFilter: LevelFilterOption;
   onFilterChange: (filter: LevelFilterOption) => void;
   onSearchChange: (filter: string) => void;
-  availableGroupByOptions: GroupByOption[];
-  currentGroupBy: GroupByOption;
-  onGroupByChange: (groupBy: GroupByOption) => void;
+  groupByProps?: {
+    availableGroupByOptions: GroupByOption[];
+    currentGroupBy: GroupByOption;
+    onGroupByChange: (groupBy: GroupByOption) => void;
+  };
 }
 
 export const CheckupControls: FunctionComponent<CheckupControlsProps> = ({
@@ -34,9 +36,7 @@ export const CheckupControls: FunctionComponent<CheckupControlsProps> = ({
   currentFilter,
   onFilterChange,
   onSearchChange,
-  availableGroupByOptions,
-  currentGroupBy,
-  onGroupByChange,
+  groupByProps,
 }) => {
   const [searchTermError, setSearchTermError] = useState<null | string>(null);
   const filterInvalid = Boolean(searchTermError);
@@ -76,7 +76,7 @@ export const CheckupControls: FunctionComponent<CheckupControlsProps> = ({
 
           {/* These two components provide their own EuiFlexItem wrappers */}
           <FilterBar {...{ allDeprecations, currentFilter, onFilterChange }} />
-          <GroupByBar {...{ availableGroupByOptions, currentGroupBy, onGroupByChange }} />
+          {groupByProps && <GroupByBar {...groupByProps} />}
 
           <EuiFlexItem grow={false}>
             <EuiButton fill onClick={loadData} iconType="refresh" isLoading={isLoading}>
@@ -88,6 +88,7 @@ export const CheckupControls: FunctionComponent<CheckupControlsProps> = ({
           </EuiFlexItem>
         </EuiFlexGroup>
       </EuiFlexItem>
+
       {filterInvalid && (
         <EuiFlexItem grow={false}>
           <EuiCallOut
