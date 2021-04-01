@@ -12,11 +12,11 @@ import { i18n } from '@kbn/i18n';
 import { EuiSpacer } from '@elastic/eui';
 
 import { GroupByOption, LevelFilterOption, UpgradeAssistantTabProps } from '../types';
-import { NoDeprecationsPrompt } from '../shared';
+import { NoDeprecationsPrompt, GroupedDeprecations } from '../shared';
 import { CheckupControls } from './controls';
-import { GroupedDeprecations } from './deprecations/grouped';
 import { EsDeprecationErrors } from './es_deprecation_errors';
 import { SectionLoading } from '../../../shared_imports';
+import { EsDeprecationAccordion } from './deprecations/group_item';
 
 const i18nTexts = {
   isLoading: i18n.translate('xpack.upgradeAssistant.esDeprecations.loadingText', {
@@ -100,7 +100,9 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
           currentFilter={currentFilter}
           search={search}
           allDeprecations={deprecations}
-        />
+        >
+          <EsDeprecationAccordion />
+        </GroupedDeprecations>
       </div>
     );
   } else if (error) {

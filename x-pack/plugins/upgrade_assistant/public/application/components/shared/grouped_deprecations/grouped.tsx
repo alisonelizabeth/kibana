@@ -19,12 +19,13 @@ import {
 } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 
+// eslint-disable-next-line @kbn/eslint/no-restricted-paths
+import { DomainDeprecationDetails } from 'src/core/server/types';
 import { DeprecationInfo, EnrichedDeprecationInfo } from '../../../../../common/types';
 import { GroupByOption, LevelFilterOption } from '../../types';
 
 import { DeprecationCountSummary } from './count_summary';
-import { DeprecationHealth } from './health';
-import { DeprecationList } from './list';
+import { LEVEL_MAP } from '../constants';
 
 // exported only for testing
 export const filterDeps = (level: LevelFilterOption, search: string = '') => {
@@ -54,56 +55,6 @@ export const filterDeps = (level: LevelFilterOption, search: string = '') => {
 
   // Return true if every condition function returns true (boolean AND)
   return (dep: EnrichedDeprecationInfo) => conditions.map((c) => c(dep)).every((t) => t);
-};
-
-/**
- * A single accordion item for a grouped deprecation item.
- */
-export const DeprecationAccordion: FunctionComponent<{
-  id: string;
-  deprecations: EnrichedDeprecationInfo[];
-  title: string;
-  currentGroupBy: GroupByOption;
-  forceExpand: boolean;
-  dataTestSubj: string;
-}> = ({ id, deprecations, title, currentGroupBy, forceExpand, dataTestSubj }) => {
-  const hasIndices = Boolean(
-    currentGroupBy === GroupByOption.message && deprecations.filter((d) => d.index).length
-  );
-  const numIndices = hasIndices ? deprecations.length : null;
-
-  return (
-    <EuiAccordion
-      id={id}
-      data-test-subj={dataTestSubj}
-      className="upgDeprecations__item"
-      initialIsOpen={forceExpand}
-      buttonContent={<span className="upgDeprecations__itemName">{title}</span>}
-      extraAction={
-        <div>
-          {hasIndices && (
-            <Fragment>
-              <EuiBadge color="hollow">
-                <span data-test-subj="indexCount">{numIndices}</span>{' '}
-                <FormattedMessage
-                  id="xpack.upgradeAssistant.checkupTab.indicesBadgeLabel"
-                  defaultMessage="{numIndices, plural, one {index} other {indices}}"
-                  values={{ numIndices }}
-                />
-              </EuiBadge>
-              &emsp;
-            </Fragment>
-          )}
-          <DeprecationHealth
-            single={currentGroupBy === GroupByOption.message}
-            deprecations={deprecations}
-          />
-        </div>
-      }
-    >
-      <DeprecationList deprecations={deprecations} currentGroupBy={currentGroupBy} />
-    </EuiAccordion>
-  );
 };
 
 interface GroupedDeprecationsProps {
@@ -222,14 +173,14 @@ export class GroupedDeprecations extends React.Component<
             // Apply pagination
             .slice(currentPage * PER_PAGE, (currentPage + 1) * PER_PAGE)
             .map((groupName) => [
-              <DeprecationAccordion
-                key={expandNumber}
-                id={`depgroup-${groupName}`}
-                dataTestSubj={`depgroup_${groupName.split(' ').join('_')}`}
-                title={groupName}
-                deprecations={groups[groupName]}
-                {...{ currentGroupBy, forceExpand }}
-              />,
+              React.cloneElement(this.props.children, {
+                key: expandNumber,
+                id: `depgroup-${groupName}`,
+                dataTestSubj: `depgroup_${groupName.split(' ').join('_')}`,
+                title: groupName,
+                deprecations: groups[groupName],
+                ...{ currentGroupBy, forceExpand },
+              }),
             ])}
 
           {/* Only show pagination if we have more than PER_PAGE. */}

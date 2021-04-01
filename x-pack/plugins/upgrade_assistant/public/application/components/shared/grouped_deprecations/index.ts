@@ -5,6 +5,4 @@
  * 2.0.
  */
 
-export { NoDeprecationsPrompt } from './no_deprecations';
-export { GroupedDeprecations } from './grouped_deprecations';
-export { DeprecationHealth } from './health';
+export { GroupedDeprecations } from './grouped';

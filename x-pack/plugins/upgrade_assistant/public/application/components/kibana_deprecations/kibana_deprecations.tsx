@@ -5,27 +5,22 @@
  * 2.0.
  */
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 
 import {
-  EuiButton,
   EuiButtonEmpty,
   EuiPageBody,
   EuiPageHeader,
-  EuiTabbedContent,
-  EuiTabbedContentTab,
   EuiPageContent,
   EuiPageContentBody,
-  EuiToolTip,
-  EuiNotificationBadge,
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 
+// eslint-disable-next-line @kbn/eslint/no-restricted-paths
 import { DomainDeprecationDetails } from 'src/core/server/types';
 import { useAppContext } from '../../app_context';
-import { UpgradeAssistantTabProps, EsTabs, TelemetryState } from '../types';
-import { DeprecationTabContent } from './deprecation_tab_content';
+// import { TelemetryState } from '../types';
 import { KibanaDeprecationsList } from './deprecations_list';
 
 const i18nTexts = {
@@ -44,14 +39,14 @@ const i18nTexts = {
 };
 
 export const KibanaDeprecationsContent = withRouter(({ history }: RouteComponentProps) => {
-  const [telemetryState, setTelemetryState] = useState<TelemetryState>(TelemetryState.Complete);
+  // const [telemetryState, setTelemetryState] = useState<TelemetryState>(TelemetryState.Complete);
   const [kibanaDeprecations, setKibanaDeprecations] = useState<
     DomainDeprecationDetails[] | undefined
   >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | undefined>(undefined);
 
-  const { deprecations, breadcrumbs, getUrlForApp, docLinks } = useAppContext();
+  const { deprecations, breadcrumbs, docLinks } = useAppContext();
 
   useEffect(() => {
     breadcrumbs.setBreadcrumbs('kibanaDeprecations');

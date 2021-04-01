@@ -5,16 +5,16 @@
  * 2.0.
  */
 
-import { find } from 'lodash';
 import React, { FunctionComponent, useState } from 'react';
 import { i18n } from '@kbn/i18n';
 
 import { EuiSpacer } from '@elastic/eui';
 
 import { GroupByOption, LevelFilterOption, UpgradeAssistantTabProps } from '../types';
-import { NoDeprecationsPrompt } from '../shared';
+import { NoDeprecationsPrompt, GroupedDeprecations } from '../shared';
 import { CheckupControls } from '../es_deprecations/controls';
 import { SectionLoading } from '../../../shared_imports';
+import { KibanaDeprecationAccordion } from './kibana_group_item';
 
 export interface CheckupTabProps extends UpgradeAssistantTabProps {
   checkupLabel: string;
@@ -40,7 +40,6 @@ export const KibanaDeprecationsList: FunctionComponent<CheckupTabProps> = ({
 }) => {
   const [currentFilter, setCurrentFilter] = useState<LevelFilterOption>(LevelFilterOption.all);
   const [search, setSearch] = useState<string>('');
-  const [currentGroupBy, setCurrentGroupBy] = useState<GroupByOption>(GroupByOption.message);
 
   const changeFilter = (filter: LevelFilterOption) => {
     setCurrentFilter(filter);
@@ -48,18 +47,6 @@ export const KibanaDeprecationsList: FunctionComponent<CheckupTabProps> = ({
 
   const changeSearch = (newSearch: string) => {
     setSearch(newSearch);
-  };
-
-  const changeGroupBy = (groupBy: GroupByOption) => {
-    setCurrentGroupBy(groupBy);
-  };
-
-  const availableGroupByOptions = () => {
-    if (!deprecations) {
-      return [];
-    }
-
-    return Object.keys(GroupByOption).filter((opt) => find(deprecations, opt)) as GroupByOption[];
   };
 
   if (deprecations && deprecations.length === 0) {
@@ -89,12 +76,14 @@ export const KibanaDeprecationsList: FunctionComponent<CheckupTabProps> = ({
 
         <EuiSpacer />
 
-        {/* <GroupedDeprecations
-          currentGroupBy={currentGroupBy}
+        <GroupedDeprecations
+          currentGroupBy={GroupByOption.message}
           currentFilter={currentFilter}
           search={search}
           allDeprecations={deprecations}
-        /> */}
+        >
+          <KibanaDeprecationAccordion />
+        </GroupedDeprecations>
       </div>
     );
   } else if (error) {
