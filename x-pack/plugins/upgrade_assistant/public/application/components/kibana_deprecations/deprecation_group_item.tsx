@@ -17,17 +17,26 @@ const sortByLevelDesc = (a: DomainDeprecationDetails, b: DomainDeprecationDetail
   return -1 * (LEVEL_MAP[a.level] - LEVEL_MAP[b.level]);
 };
 
-/**
- * A single accordion item for a grouped deprecation item.
- */
-export const KibanaDeprecationAccordion: FunctionComponent<{
+export interface Props {
   id: string;
   deprecations: DomainDeprecationDetails[];
   title: string;
   currentGroupBy: GroupByOption;
   forceExpand: boolean;
   dataTestSubj: string;
-}> = ({ id, deprecations, title, currentGroupBy, forceExpand, dataTestSubj }) => {
+}
+
+/**
+ * A single accordion item for a grouped deprecation item.
+ */
+export const KibanaDeprecationAccordion: FunctionComponent<Props> = ({
+  id,
+  deprecations,
+  title,
+  currentGroupBy,
+  forceExpand,
+  dataTestSubj,
+}) => {
   return (
     <EuiAccordion
       id={id}

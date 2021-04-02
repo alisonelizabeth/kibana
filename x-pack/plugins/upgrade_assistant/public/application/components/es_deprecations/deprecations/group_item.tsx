@@ -14,17 +14,26 @@ import { GroupByOption } from '../../types';
 import { EsDeprecationList } from './list';
 import { LEVEL_MAP } from '../../constants';
 
-/**
- * A single accordion item for a grouped deprecation item.
- */
-export const EsDeprecationAccordion: FunctionComponent<{
+export interface Props {
   id: string;
   deprecations: EnrichedDeprecationInfo[];
   title: string;
   currentGroupBy: GroupByOption;
   forceExpand: boolean;
   dataTestSubj: string;
-}> = ({ id, deprecations, title, currentGroupBy, forceExpand, dataTestSubj }) => {
+}
+
+/**
+ * A single accordion item for a grouped deprecation item.
+ */
+export const EsDeprecationAccordion: FunctionComponent<Props> = ({
+  id,
+  deprecations,
+  title,
+  currentGroupBy,
+  forceExpand,
+  dataTestSubj,
+}) => {
   const hasIndices = Boolean(
     currentGroupBy === GroupByOption.message &&
       (deprecations as EnrichedDeprecationInfo[]).filter((d) => d.index).length
@@ -34,6 +43,7 @@ export const EsDeprecationAccordion: FunctionComponent<{
   return (
     <EuiAccordion
       id={id}
+      key={id}
       data-test-subj={dataTestSubj}
       className="upgDeprecations__item"
       initialIsOpen={forceExpand}

@@ -14,14 +14,17 @@ import {
   EuiPageHeader,
   EuiPageContent,
   EuiPageContentBody,
+  EuiSpacer,
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 
 // eslint-disable-next-line @kbn/eslint/no-restricted-paths
 import { DomainDeprecationDetails } from 'src/core/server/types';
 import { useAppContext } from '../../app_context';
+import { NoDeprecationsPrompt } from '../shared';
+import { KibanaDeprecationList } from './deprecation_list';
+import { SectionLoading } from '../../../shared_imports';
 // import { TelemetryState } from '../types';
-import { KibanaDeprecationsList } from './deprecations_list';
 
 const i18nTexts = {
   pageTitle: i18n.translate('xpack.upgradeAssistant.kibanaDeprecations.pageTitle', {
@@ -35,6 +38,9 @@ const i18nTexts = {
   }),
   deprecationLabel: i18n.translate('xpack.upgradeAssistant.kibanaDeprecations.deprecationLabel', {
     defaultMessage: 'Kibana',
+  }),
+  isLoading: i18n.translate('xpack.upgradeAssistant.kibanaDeprecations.loadingText', {
+    defaultMessage: 'Loading deprecations…',
   }),
 };
 
@@ -84,6 +90,33 @@ export const KibanaDeprecationsContent = withRouter(({ history }: RouteComponent
   //   }
   // }, [api, tabName, isLoading]);
 
+  const getPageContent = () => {
+    if (kibanaDeprecations && kibanaDeprecations.length === 0) {
+      return (
+        <NoDeprecationsPrompt
+          deprecationType={i18nTexts.deprecationLabel}
+          navigateToOverviewPage={() => history.push('/overview')}
+        />
+      );
+    }
+
+    let content: React.ReactNode;
+
+    if (isLoading) {
+      content = <SectionLoading>{i18nTexts.isLoading}</SectionLoading>;
+    } else if (kibanaDeprecations?.length) {
+      content = <KibanaDeprecationList deprecations={kibanaDeprecations} />;
+    } else if (error) {
+      content = <div>TODO handle error</div>;
+    }
+    return (
+      <div data-test-subj="kibanaDeprecationsContent">
+        <EuiSpacer />
+        {content}
+      </div>
+    );
+  };
+
   return (
     <EuiPageBody>
       <EuiPageContent>
@@ -102,15 +135,7 @@ export const KibanaDeprecationsContent = withRouter(({ history }: RouteComponent
           ]}
         />
 
-        <EuiPageContentBody>
-          <KibanaDeprecationsList
-            navigateToOverviewPage={() => history.push('/overview')}
-            deprecations={kibanaDeprecations}
-            checkupLabel={i18nTexts.deprecationLabel}
-            error={error}
-            isLoading={isLoading}
-          />
-        </EuiPageContentBody>
+        <EuiPageContentBody>{getPageContent()}</EuiPageContentBody>
       </EuiPageContent>
     </EuiPageBody>
   );

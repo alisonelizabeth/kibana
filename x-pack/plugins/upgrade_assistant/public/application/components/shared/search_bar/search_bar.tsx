@@ -9,34 +9,42 @@ import React, { FunctionComponent, useState } from 'react';
 import { i18n } from '@kbn/i18n';
 import { EuiButton, EuiFieldSearch, EuiFlexGroup, EuiFlexItem, EuiCallOut } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
-import { DeprecationInfo } from '../../../../common/types';
-import { validateRegExpString } from '../../lib/utils';
-import { GroupByOption, LevelFilterOption } from '../types';
-import { FilterBar } from './filter_bar';
-import { GroupByBar } from './group_by_bar';
+// eslint-disable-next-line @kbn/eslint/no-restricted-paths
+import { DomainDeprecationDetails } from 'src/core/server/types';
+import { DeprecationInfo } from '../../../../../common/types';
+import { validateRegExpString } from '../../../lib/utils';
+import { GroupByOption, LevelFilterOption } from '../../types';
+import { DeprecationLevelFilter } from './level_filter';
+import { GroupByFilter } from './group_by_filter';
 
-interface CheckupControlsProps {
-  allDeprecations?: DeprecationInfo[];
+interface SearchBarProps {
+  allDeprecations?: DeprecationInfo[] | DomainDeprecationDetails;
+
   isLoading: boolean;
   loadData: () => void;
   currentFilter: LevelFilterOption;
   onFilterChange: (filter: LevelFilterOption) => void;
   onSearchChange: (filter: string) => void;
-  groupByProps?: {
+  totalDeprecationsCount: number;
+  deprecationLevelsCount: {
+    [key: string]: number;
+  };
+  groupByFilterProps?: {
     availableGroupByOptions: GroupByOption[];
     currentGroupBy: GroupByOption;
     onGroupByChange: (groupBy: GroupByOption) => void;
   };
 }
 
-export const CheckupControls: FunctionComponent<CheckupControlsProps> = ({
-  allDeprecations,
+export const SearchBar: FunctionComponent<SearchBarProps> = ({
+  totalDeprecationsCount,
+  deprecationLevelsCount,
   isLoading,
   loadData,
   currentFilter,
   onFilterChange,
   onSearchChange,
-  groupByProps,
+  groupByFilterProps,
 }) => {
   const [searchTermError, setSearchTermError] = useState<null | string>(null);
   const filterInvalid = Boolean(searchTermError);
@@ -75,8 +83,15 @@ export const CheckupControls: FunctionComponent<CheckupControlsProps> = ({
           </EuiFlexItem>
 
           {/* These two components provide their own EuiFlexItem wrappers */}
-          <FilterBar {...{ allDeprecations, currentFilter, onFilterChange }} />
-          {groupByProps && <GroupByBar {...groupByProps} />}
+          <DeprecationLevelFilter
+            {...{
+              totalDeprecationsCount,
+              levelsCount: deprecationLevelsCount,
+              currentFilter,
+              onFilterChange,
+            }}
+          />
+          {groupByFilterProps && <GroupByFilter {...groupByFilterProps} />}
 
           <EuiFlexItem grow={false}>
             <EuiButton fill onClick={loadData} iconType="refresh" isLoading={isLoading}>

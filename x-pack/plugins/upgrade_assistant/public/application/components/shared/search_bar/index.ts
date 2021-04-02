@@ -5,4 +5,4 @@
  * 2.0.
  */
 
-export { GroupedDeprecations } from './grouped';
+export { SearchBar } from './search_bar';

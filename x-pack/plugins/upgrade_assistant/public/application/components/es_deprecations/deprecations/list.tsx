@@ -105,16 +105,16 @@ export const EsDeprecationList: FunctionComponent<{
   } else if (currentGroupBy === GroupByOption.index) {
     return (
       <div>
-        {deprecations.sort(sortByLevelDesc).map((dep) => (
-          <MessageDeprecation deprecation={dep} key={dep.message} />
+        {deprecations.sort(sortByLevelDesc).map((dep, index) => (
+          <MessageDeprecation deprecation={dep} key={`${dep.message}-${index}`} />
         ))}
       </div>
     );
   } else {
     return (
       <div>
-        {deprecations.sort(sortByLevelDesc).map((dep) => (
-          <SimpleMessageDeprecation deprecation={dep} key={dep.message} />
+        {deprecations.sort(sortByLevelDesc).map((dep, index) => (
+          <SimpleMessageDeprecation deprecation={dep} key={`${dep.message}-${index}`} />
         ))}
       </div>
     );
