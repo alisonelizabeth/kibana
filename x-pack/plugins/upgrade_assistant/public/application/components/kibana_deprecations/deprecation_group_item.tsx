@@ -6,65 +6,53 @@
  */
 import React, { FunctionComponent } from 'react';
 import { EuiAccordion, EuiFlexGroup, EuiFlexItem, EuiText } from '@elastic/eui';
+import { i18n } from '@kbn/i18n';
 
 // eslint-disable-next-line @kbn/eslint/no-restricted-paths
 import { DomainDeprecationDetails } from 'src/core/server/types';
 import { DeprecationHealth } from '../shared';
 import { LEVEL_MAP } from '../constants';
-import { GroupByOption } from '../types';
 
-const sortByLevelDesc = (a: DomainDeprecationDetails, b: DomainDeprecationDetails) => {
-  return -1 * (LEVEL_MAP[a.level] - LEVEL_MAP[b.level]);
+const getDeprecationTitle = (domainId: string) => {
+  return i18n.translate('xpack.upgradeAssistant.deprecationGroupItemTitle', {
+    defaultMessage: `"${domainId}" is using a deprecated feature`,
+  });
 };
 
 export interface Props {
-  id: string;
-  deprecations: DomainDeprecationDetails[];
-  title: string;
-  currentGroupBy: GroupByOption;
+  deprecation: DomainDeprecationDetails;
+  index: number;
   forceExpand: boolean;
-  dataTestSubj: string;
 }
 
 /**
  * A single accordion item for a grouped deprecation item.
  */
 export const KibanaDeprecationAccordion: FunctionComponent<Props> = ({
-  id,
-  deprecations,
-  title,
-  currentGroupBy,
+  deprecation,
   forceExpand,
-  dataTestSubj,
+  index,
 }) => {
+  const { domainId, level, message } = deprecation;
   return (
     <EuiAccordion
-      id={id}
-      data-test-subj={dataTestSubj}
+      id={`${domainId}-${index}`}
+      data-test-subj={`${domainId}Deprecation`}
       className="upgDeprecations__item"
       initialIsOpen={forceExpand}
-      buttonContent={<span className="upgDeprecations__itemName">{title}</span>}
-      extraAction={
-        <DeprecationHealth
-          single={currentGroupBy === GroupByOption.message}
-          deprecationLevels={deprecations.map((d) => LEVEL_MAP[d.level])}
-        />
+      buttonContent={
+        <span className="upgDeprecations__itemName">{getDeprecationTitle(domainId)}</span>
       }
+      extraAction={<DeprecationHealth single deprecationLevels={[LEVEL_MAP[level]]} />}
     >
-      <div>
-        {deprecations.sort(sortByLevelDesc).map((dep, index) => {
-          return (
-            <div key={`dep-${index}`} className="upgDeprecationCell">
-              <EuiFlexGroup responsive={false} wrap alignItems="baseline">
-                <EuiFlexItem grow>
-                  <EuiText>
-                    <p>{dep.message}</p>
-                  </EuiText>
-                </EuiFlexItem>
-              </EuiFlexGroup>
-            </div>
-          );
-        })}
+      <div className="upgDeprecationCell">
+        <EuiFlexGroup responsive={false} wrap alignItems="baseline">
+          <EuiFlexItem grow>
+            <EuiText>
+              <p>{message}</p>
+            </EuiText>
+          </EuiFlexItem>
+        </EuiFlexGroup>
       </div>
     </EuiAccordion>
   );

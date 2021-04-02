@@ -12,84 +12,41 @@ import { EuiSpacer } from '@elastic/eui';
 // eslint-disable-next-line @kbn/eslint/no-restricted-paths
 import { DomainDeprecationDetails } from 'src/core/server/types';
 import { groupBy } from 'lodash';
-import { GroupByOption, LevelFilterOption } from '../types';
+import { LevelFilterOption } from '../types';
 import { SearchBar, DeprecationListBar, DeprecationPagination } from '../shared';
 import { KibanaDeprecationAccordion } from './deprecation_group_item';
+import { LEVEL_MAP, DEPRECATIONS_PER_PAGE } from '../constants';
 
 interface Props {
   deprecations: DomainDeprecationDetails[];
 }
 
-const PER_PAGE = 25;
-
-export const filterDeps = (level: LevelFilterOption, search: string = '') => {
-  const conditions: Array<(dep: DomainDeprecationDetails) => boolean> = [];
-
-  if (level !== LevelFilterOption.all) {
-    conditions.push((dep: DomainDeprecationDetails) => dep.level === level);
-  }
-
-  if (search.length > 0) {
-    // Change everything to lower case for a case-insensitive comparison
-    conditions.push((dep) => {
-      try {
-        const searchReg = new RegExp(search.toLowerCase());
-        return Boolean(dep.message.toLowerCase().match(searchReg));
-      } catch (e) {
-        // ignore any regexp errors.
-        return true;
+const getFilteredDeprecations = (
+  deprecations: DomainDeprecationDetails[],
+  level: string,
+  search: string
+) => {
+  return deprecations
+    .filter((deprecation) => {
+      return level === 'all' ? true : deprecation.level === level;
+    })
+    .filter((filteredDep) => {
+      if (search.length > 0) {
+        try {
+          const searchReg = new RegExp(search.toLowerCase());
+          return Boolean(filteredDep.message.toLowerCase().match(searchReg));
+        } catch (e) {
+          // ignore any regexp errors
+          return true;
+        }
       }
+      return true;
     });
-  }
-
-  // Return true if every condition function returns true (boolean AND)
-  return (dep: DomainDeprecationDetails) => conditions.map((c) => c(dep)).every((t) => t);
 };
 
-/**
- * Collection of calculated fields based on props, extracted for reuse in
- * `render` and `getDerivedStateFromProps`.
- */
-const CalcFields = {
-  filteredDeprecations(props: {
-    deprecations: DomainDeprecationDetails[];
-    currentFilter: LevelFilterOption;
-    search: string;
-  }) {
-    const { deprecations = [], currentFilter, search } = props;
-    return deprecations.filter(filterDeps(currentFilter, search));
-  },
-
-  groups(props: {
-    deprecations: DomainDeprecationDetails[];
-    currentFilter: LevelFilterOption;
-    search: string;
-  }) {
-    return groupBy(CalcFields.filteredDeprecations(props), GroupByOption.message);
-  },
-
-  numPages(props: {
-    deprecations: DomainDeprecationDetails[];
-    currentFilter: LevelFilterOption;
-    search: string;
-  }) {
-    return Math.ceil(Object.keys(CalcFields.groups(props)).length / PER_PAGE);
-  },
+const sortByLevelDesc = (a: DomainDeprecationDetails, b: DomainDeprecationDetails) => {
+  return -1 * (LEVEL_MAP[a.level] - LEVEL_MAP[b.level]);
 };
-
-// TODO test pagination
-//   public static getDerivedStateFromProps(
-//     nextProps: GroupedDeprecationsProps,
-//     { currentPage }: GroupedDeprecationsState
-//   ) {
-//   // If filters change and the currentPage is now bigger than the num of pages we're going to show,
-//   // reset the current page to 0.
-//   if (currentPage >= CalcFields.numPages(nextProps)) {
-//     return { currentPage: 0 };
-//   } else {
-//     return null;
-//   }
-// }
 
 export const KibanaDeprecationList: FunctionComponent<Props> = ({ deprecations }) => {
   const [currentFilter, setCurrentFilter] = useState<LevelFilterOption>(LevelFilterOption.all);
@@ -118,17 +75,10 @@ export const KibanaDeprecationList: FunctionComponent<Props> = ({ deprecations }
     return counts;
   }, {} as { [level: string]: number });
 
-  const filteredDeprecations = CalcFields.filteredDeprecations({
-    deprecations,
-    currentFilter,
-    search,
-  });
+  const filteredDeprecations = getFilteredDeprecations(deprecations, currentFilter, search);
 
-  const groups = CalcFields.groups({
-    deprecations,
-    currentFilter,
-    search,
-  });
+  // TODO reset the page count if total needed page count is less than current
+  // setCurrentPage(0);
 
   return (
     <div data-test-subj="deprecationsContainer">
@@ -152,35 +102,27 @@ export const KibanaDeprecationList: FunctionComponent<Props> = ({ deprecations }
       <EuiSpacer size="s" />
 
       <div className="upgDeprecations">
-        {Object.keys(groups)
-          .sort()
-          // Apply pagination
-          .slice(currentPage * PER_PAGE, (currentPage + 1) * PER_PAGE)
-          .map((groupName) => [
+        {filteredDeprecations
+          .slice(currentPage * DEPRECATIONS_PER_PAGE, (currentPage + 1) * DEPRECATIONS_PER_PAGE)
+          .sort(sortByLevelDesc)
+          .map((deprecation, index) => [
             <KibanaDeprecationAccordion
               {...{
                 key: expandState.expandNumber,
-                id: `depgroup-${groupName}`,
-                dataTestSubj: `depgroup_${groupName.split(' ').join('_')}`,
-                title: groupName,
-                deprecations: groups[groupName],
-                currentGroupBy: GroupByOption.message,
+                index,
+                deprecation,
                 forceExpand: expandState.forceExpand,
               }}
             />,
           ])}
 
-        {/* Only show pagination if we have more than PER_PAGE. */}
-        {Object.keys(groups).length > PER_PAGE && (
+        {/* Only show pagination if we have more than DEPRECATIONS_PER_PAGE */}
+        {filteredDeprecations.length > DEPRECATIONS_PER_PAGE && (
           <>
             <EuiSpacer />
 
             <DeprecationPagination
-              pageCount={CalcFields.numPages({
-                deprecations,
-                currentFilter,
-                search,
-              })}
+              pageCount={Math.ceil(filteredDeprecations.length / DEPRECATIONS_PER_PAGE)}
               activePage={currentPage}
               setPage={setCurrentPage}
             />

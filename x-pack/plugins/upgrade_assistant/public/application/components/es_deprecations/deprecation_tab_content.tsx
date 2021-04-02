@@ -20,6 +20,7 @@ import {
   DeprecationPagination,
   DeprecationListBar,
 } from '../shared';
+import { DEPRECATIONS_PER_PAGE } from '../constants';
 import { EsDeprecationErrors } from './es_deprecation_errors';
 import { EsDeprecationAccordion } from './deprecations/group_item';
 
@@ -32,8 +33,6 @@ const i18nTexts = {
 export interface CheckupTabProps extends UpgradeAssistantTabProps {
   checkupLabel: string;
 }
-
-const PER_PAGE = 25;
 
 export const filterDeps = (level: LevelFilterOption, search: string = '') => {
   const conditions: Array<(dep: EnrichedDeprecationInfo) => boolean> = [];
@@ -86,7 +85,7 @@ const CalcFields = {
     currentFilter: LevelFilterOption;
     search: string;
   }) {
-    return Math.ceil(Object.keys(CalcFields.groups(props)).length / PER_PAGE);
+    return Math.ceil(Object.keys(CalcFields.groups(props)).length / DEPRECATIONS_PER_PAGE);
   },
 };
 
@@ -197,7 +196,7 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
           {Object.keys(groups)
             .sort()
             // Apply pagination
-            .slice(currentPage * PER_PAGE, (currentPage + 1) * PER_PAGE)
+            .slice(currentPage * DEPRECATIONS_PER_PAGE, (currentPage + 1) * DEPRECATIONS_PER_PAGE)
             .map((groupName) => [
               <EsDeprecationAccordion
                 {...{
@@ -212,8 +211,8 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
               />,
             ])}
 
-          {/* Only show pagination if we have more than PER_PAGE. */}
-          {Object.keys(groups).length > PER_PAGE && (
+          {/* Only show pagination if we have more than DEPRECATIONS_PER_PAGE. */}
+          {Object.keys(groups).length > DEPRECATIONS_PER_PAGE && (
             <>
               <EuiSpacer />
 

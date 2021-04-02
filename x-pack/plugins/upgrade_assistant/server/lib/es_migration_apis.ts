@@ -60,6 +60,12 @@ export async function getUpgradeAssistantStatus(
         url: 'doc_url',
         details: 'foobar',
       },
+      {
+        level: 'warning',
+        message: 'cluster random',
+        url: 'doc_url',
+        details: 'foobar',
+      },
     ],
     indices: [
       {
