@@ -5,24 +5,34 @@
  * 2.0.
  */
 import React, { FunctionComponent } from 'react';
-import { EuiAccordion, EuiFlexGroup, EuiFlexItem, EuiText } from '@elastic/eui';
+import { EuiAccordion, EuiButton, EuiFlexGroup, EuiFlexItem, EuiLink, EuiText } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 
 // eslint-disable-next-line @kbn/eslint/no-restricted-paths
 import { DomainDeprecationDetails } from 'src/core/server/types';
 import { DeprecationHealth } from '../shared';
 import { LEVEL_MAP } from '../constants';
+import { FlyoutContent } from './steps_flyout';
 
-const getDeprecationTitle = (domainId: string) => {
-  return i18n.translate('xpack.upgradeAssistant.deprecationGroupItemTitle', {
-    defaultMessage: `"${domainId}" is using a deprecated feature`,
-  });
+const i18nTexts = {
+  getDeprecationTitle: (domainId: string) => {
+    return i18n.translate('xpack.upgradeAssistant.deprecationGroupItemTitle', {
+      defaultMessage: `"${domainId}" is using a deprecated feature`,
+    });
+  },
+  docLinkText: i18n.translate('xpack.upgradeAssistant.deprecationGroupItem.docLinkText', {
+    defaultMessage: 'Documentation',
+  }),
+  fixButtonLabel: i18n.translate('xpack.upgradeAssistant.deprecationGroupItem.fixButtonLabel', {
+    defaultMessage: 'Fix',
+  }),
 };
 
 export interface Props {
   deprecation: DomainDeprecationDetails;
   index: number;
   forceExpand: boolean;
+  showFlyout: (flyoutContent: FlyoutContent) => void;
 }
 
 /**
@@ -32,28 +42,43 @@ export const KibanaDeprecationAccordion: FunctionComponent<Props> = ({
   deprecation,
   forceExpand,
   index,
+  showFlyout,
 }) => {
-  const { domainId, level, message } = deprecation;
+  const { domainId, level, message, documentationUrl, correctiveActions } = deprecation;
+
   return (
     <EuiAccordion
       id={`${domainId}-${index}`}
       data-test-subj={`${domainId}Deprecation`}
-      className="upgDeprecations__item"
       initialIsOpen={forceExpand}
-      buttonContent={
-        <span className="upgDeprecations__itemName">{getDeprecationTitle(domainId)}</span>
-      }
+      buttonContent={i18nTexts.getDeprecationTitle(domainId)}
+      paddingSize="m"
       extraAction={<DeprecationHealth single deprecationLevels={[LEVEL_MAP[level]]} />}
     >
-      <div className="upgDeprecationCell">
-        <EuiFlexGroup responsive={false} wrap alignItems="baseline">
-          <EuiFlexItem grow>
-            <EuiText>
-              <p>{message}</p>
-            </EuiText>
+      <EuiFlexGroup justifyContent="spaceBetween">
+        <EuiFlexItem>
+          <EuiText size="s">
+            <p>{message}</p>
+            {documentationUrl && (
+              <p>
+                <EuiLink href={documentationUrl} external>
+                  {i18nTexts.docLinkText}
+                </EuiLink>
+              </p>
+            )}
+          </EuiText>
+        </EuiFlexItem>
+        {correctiveActions?.manualSteps && (
+          <EuiFlexItem grow={false}>
+            <EuiButton
+              size="s"
+              onClick={() => showFlyout({ domainId, steps: correctiveActions.manualSteps! })}
+            >
+              {i18nTexts.fixButtonLabel}
+            </EuiButton>
           </EuiFlexItem>
-        </EuiFlexGroup>
-      </div>
+        )}
+      </EuiFlexGroup>
     </EuiAccordion>
   );
 };

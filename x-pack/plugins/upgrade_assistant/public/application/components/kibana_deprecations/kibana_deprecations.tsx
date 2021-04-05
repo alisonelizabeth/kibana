@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 
 import {
@@ -20,11 +20,13 @@ import { i18n } from '@kbn/i18n';
 
 // eslint-disable-next-line @kbn/eslint/no-restricted-paths
 import { DomainDeprecationDetails } from 'src/core/server/types';
+
+import { SectionLoading } from '../../../shared_imports';
 import { useAppContext } from '../../app_context';
 import { NoDeprecationsPrompt } from '../shared';
 import { KibanaDeprecationList } from './deprecation_list';
-import { SectionLoading } from '../../../shared_imports';
-// import { TelemetryState } from '../types';
+import { StepsFlyout, FlyoutContent } from './steps_flyout';
+import { KibanaDeprecationErrors } from './kibana_deprecation_errors';
 
 const i18nTexts = {
   pageTitle: i18n.translate('xpack.upgradeAssistant.kibanaDeprecations.pageTitle', {
@@ -45,50 +47,53 @@ const i18nTexts = {
 };
 
 export const KibanaDeprecationsContent = withRouter(({ history }: RouteComponentProps) => {
-  // const [telemetryState, setTelemetryState] = useState<TelemetryState>(TelemetryState.Complete);
   const [kibanaDeprecations, setKibanaDeprecations] = useState<
     DomainDeprecationDetails[] | undefined
   >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | undefined>(undefined);
+  const [flyoutContent, setFlyoutContent] = useState<FlyoutContent | undefined>(undefined);
 
-  const { deprecations, breadcrumbs, docLinks } = useAppContext();
+  const { deprecations, breadcrumbs, docLinks, api } = useAppContext();
+
+  const getAllDeprecations = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      const response = await deprecations.getAllDeprecations();
+      setKibanaDeprecations(response);
+    } catch (e) {
+      setError(e);
+    }
+
+    setIsLoading(false);
+  }, [deprecations]);
+
+  const toggleFlyout = (newFlyoutContent?: FlyoutContent) => {
+    if (typeof newFlyoutContent === 'undefined') {
+      setFlyoutContent(undefined);
+    }
+
+    setFlyoutContent(newFlyoutContent);
+  };
+
+  useEffect(() => {
+    async function sendTelemetryData() {
+      await api.sendTelemetryData({
+        kibana: true,
+      });
+    }
+
+    sendTelemetryData();
+  }, [api]);
 
   useEffect(() => {
     breadcrumbs.setBreadcrumbs('kibanaDeprecations');
   }, [breadcrumbs]);
 
   useEffect(() => {
-    async function getAllDeprecations() {
-      setIsLoading(true);
-
-      try {
-        const response = await deprecations.getAllDeprecations();
-        setKibanaDeprecations(response);
-      } catch (e) {
-        setError(e);
-      }
-
-      setIsLoading(false);
-    }
-
     getAllDeprecations();
-  }, [deprecations]);
-
-  // useEffect(() => {
-  //   if (isLoading === false) {
-  //     setTelemetryState(TelemetryState.Running);
-
-  //     async function sendTelemetryData() {
-  //       await api.sendTelemetryData({
-  //         [tabName]: true,
-  //       });
-  //       setTelemetryState(TelemetryState.Complete);
-  //     }
-
-  //     sendTelemetryData();
-  //   }
-  // }, [api, tabName, isLoading]);
+  }, [deprecations, getAllDeprecations]);
 
   const getPageContent = () => {
     if (kibanaDeprecations && kibanaDeprecations.length === 0) {
@@ -105,9 +110,16 @@ export const KibanaDeprecationsContent = withRouter(({ history }: RouteComponent
     if (isLoading) {
       content = <SectionLoading>{i18nTexts.isLoading}</SectionLoading>;
     } else if (kibanaDeprecations?.length) {
-      content = <KibanaDeprecationList deprecations={kibanaDeprecations} />;
+      content = (
+        <KibanaDeprecationList
+          deprecations={kibanaDeprecations}
+          showFlyout={toggleFlyout}
+          reloadDeprecations={getAllDeprecations}
+          isLoading={isLoading}
+        />
+      );
     } else if (error) {
-      content = <div>TODO handle error</div>;
+      content = <KibanaDeprecationErrors errorType="requestError" />;
     }
     return (
       <div data-test-subj="kibanaDeprecationsContent">
@@ -135,7 +147,12 @@ export const KibanaDeprecationsContent = withRouter(({ history }: RouteComponent
           ]}
         />
 
-        <EuiPageContentBody>{getPageContent()}</EuiPageContentBody>
+        <EuiPageContentBody>
+          {getPageContent()}
+          {flyoutContent && (
+            <StepsFlyout closeFlyout={() => toggleFlyout()} flyoutContent={flyoutContent} />
+          )}
+        </EuiPageContentBody>
       </EuiPageContent>
     </EuiPageBody>
   );

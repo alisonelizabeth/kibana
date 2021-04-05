@@ -25,4 +25,4 @@ export const COLOR_MAP: { [level: string]: IconColor } = {
   critical: 'danger',
 };
 
-export const DEPRECATIONS_PER_PAGE = 1;
+export const DEPRECATIONS_PER_PAGE = 25;

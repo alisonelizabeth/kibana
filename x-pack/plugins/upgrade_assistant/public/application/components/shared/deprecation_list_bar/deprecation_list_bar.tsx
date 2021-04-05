@@ -32,33 +32,37 @@ export const DeprecationListBar: FunctionComponent<{
   setExpandAll: (shouldExpandAll: boolean) => void;
 }> = ({ allDeprecationsCount, filteredDeprecationsCount, setExpandAll }) => {
   return (
-    <EuiFlexGroup responsive={false} alignItems="center">
-      <EuiFlexItem grow={false}>
-        <EuiButtonEmpty
-          flush="left"
-          size="s"
-          onClick={() => setExpandAll(true)}
-          data-test-subj="expandAll"
-        >
-          {i18nTexts.expandAllButton}
-        </EuiButtonEmpty>
-      </EuiFlexItem>
-      <EuiFlexItem grow={false}>
-        <EuiButtonEmpty
-          flush="left"
-          size="s"
-          onClick={() => setExpandAll(false)}
-          data-test-subj="collapseAll"
-        >
-          {i18nTexts.collapseAllButton}
-        </EuiButtonEmpty>
-      </EuiFlexItem>
-      <EuiFlexItem />
-      <EuiFlexItem grow={false}>
+    <EuiFlexGroup responsive={false} justifyContent="spaceBetween" alignItems="baseline">
+      <EuiFlexItem>
         <DeprecationCountSummary
           allDeprecationsCount={allDeprecationsCount}
           filteredDeprecationsCount={filteredDeprecationsCount}
         />
+      </EuiFlexItem>
+
+      <EuiFlexItem>
+        <EuiFlexGroup justifyContent="flexEnd">
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty
+              flush="left"
+              size="s"
+              onClick={() => setExpandAll(true)}
+              data-test-subj="expandAll"
+            >
+              {i18nTexts.expandAllButton}
+            </EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty
+              flush="left"
+              size="s"
+              onClick={() => setExpandAll(false)}
+              data-test-subj="collapseAll"
+            >
+              {i18nTexts.collapseAllButton}
+            </EuiButtonEmpty>
+          </EuiFlexItem>
+        </EuiFlexGroup>
       </EuiFlexItem>
     </EuiFlexGroup>
   );

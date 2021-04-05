@@ -7,8 +7,15 @@
 
 import React, { FunctionComponent, useState } from 'react';
 import { i18n } from '@kbn/i18n';
-import { EuiButton, EuiFieldSearch, EuiFlexGroup, EuiFlexItem, EuiCallOut } from '@elastic/eui';
-import { FormattedMessage } from '@kbn/i18n/react';
+import {
+  EuiButtonEmpty,
+  EuiFieldSearch,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiCallOut,
+  EuiSpacer,
+  EuiHorizontalRule,
+} from '@elastic/eui';
 // eslint-disable-next-line @kbn/eslint/no-restricted-paths
 import { DomainDeprecationDetails } from 'src/core/server/types';
 import { DeprecationInfo } from '../../../../../common/types';
@@ -19,7 +26,6 @@ import { GroupByFilter } from './group_by_filter';
 
 interface SearchBarProps {
   allDeprecations?: DeprecationInfo[] | DomainDeprecationDetails;
-
   isLoading: boolean;
   loadData: () => void;
   currentFilter: LevelFilterOption;
@@ -36,6 +42,30 @@ interface SearchBarProps {
   };
 }
 
+const i18nTexts = {
+  searchAriaLabel: i18n.translate(
+    'xpack.upgradeAssistant.deprecationListSearchBar.placeholderAriaLabel',
+    { defaultMessage: 'Filter' }
+  ),
+  searchPlaceholderLabel: i18n.translate(
+    'xpack.upgradeAssistant.deprecationListSearchBar.placeholderLabel',
+    {
+      defaultMessage: 'Filter',
+    }
+  ),
+  reloadButtonLabel: i18n.translate(
+    'xpack.upgradeAssistant.deprecationListSearchBar.reloadButtonLabel',
+    {
+      defaultMessage: 'Reload',
+    }
+  ),
+  getInvalidSearchMessage: (searchTermError: string) =>
+    i18n.translate('xpack.upgradeAssistant.deprecationListSearchBar.filterErrorMessageLabel', {
+      defaultMessage: 'Filter invalid: {searchTermError}',
+      values: { searchTermError },
+    }),
+};
+
 export const SearchBar: FunctionComponent<SearchBarProps> = ({
   totalDeprecationsCount,
   deprecationLevelsCount,
@@ -49,76 +79,64 @@ export const SearchBar: FunctionComponent<SearchBarProps> = ({
   const [searchTermError, setSearchTermError] = useState<null | string>(null);
   const filterInvalid = Boolean(searchTermError);
   return (
-    <EuiFlexGroup direction="column" responsive={false}>
-      <EuiFlexItem grow={true}>
-        <EuiFlexGroup alignItems="center" wrap={true} responsive={false}>
-          <EuiFlexItem>
-            <EuiFieldSearch
-              isInvalid={filterInvalid}
-              aria-label={i18n.translate(
-                'xpack.upgradeAssistant.checkupTab.controls.searchBarPlaceholderAriaLabel',
-                { defaultMessage: 'Filter' }
-              )}
-              placeholder={i18n.translate(
-                'xpack.upgradeAssistant.checkupTab.controls.searchBarPlaceholder',
-                {
-                  defaultMessage: 'Filter',
-                }
-              )}
-              onChange={(e) => {
-                const string = e.target.value;
-                const errorMessage = validateRegExpString(string);
-                if (errorMessage) {
-                  // Emit an empty search term to listeners if search term is invalid.
-                  onSearchChange('');
-                  setSearchTermError(errorMessage);
-                } else {
-                  onSearchChange(e.target.value);
-                  if (searchTermError) {
-                    setSearchTermError(null);
+    <>
+      <EuiFlexGroup responsive={false}>
+        <EuiFlexItem>
+          <EuiFlexGroup>
+            <EuiFlexItem grow={false}>
+              <EuiFieldSearch
+                isInvalid={filterInvalid}
+                aria-label={i18nTexts.searchAriaLabel}
+                placeholder={i18nTexts.searchPlaceholderLabel}
+                onChange={(e) => {
+                  const string = e.target.value;
+                  const errorMessage = validateRegExpString(string);
+                  if (errorMessage) {
+                    // Emit an empty search term to listeners if search term is invalid.
+                    onSearchChange('');
+                    setSearchTermError(errorMessage);
+                  } else {
+                    onSearchChange(e.target.value);
+                    if (searchTermError) {
+                      setSearchTermError(null);
+                    }
                   }
-                }
+                }}
+              />
+            </EuiFlexItem>
+
+            {/* These two components provide their own EuiFlexItem wrappers */}
+            <DeprecationLevelFilter
+              {...{
+                totalDeprecationsCount,
+                levelsCount: deprecationLevelsCount,
+                currentFilter,
+                onFilterChange,
               }}
             />
-          </EuiFlexItem>
-
-          {/* These two components provide their own EuiFlexItem wrappers */}
-          <DeprecationLevelFilter
-            {...{
-              totalDeprecationsCount,
-              levelsCount: deprecationLevelsCount,
-              currentFilter,
-              onFilterChange,
-            }}
-          />
-          {groupByFilterProps && <GroupByFilter {...groupByFilterProps} />}
-
-          <EuiFlexItem grow={false}>
-            <EuiButton fill onClick={loadData} iconType="refresh" isLoading={isLoading}>
-              <FormattedMessage
-                id="xpack.upgradeAssistant.checkupTab.controls.refreshButtonLabel"
-                defaultMessage="Refresh"
-              />
-            </EuiButton>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiFlexItem>
+            {groupByFilterProps && <GroupByFilter {...groupByFilterProps} />}
+          </EuiFlexGroup>
+        </EuiFlexItem>
+        <EuiFlexItem grow={false}>
+          <EuiButtonEmpty onClick={loadData} iconType="refresh" isLoading={isLoading}>
+            {i18nTexts.reloadButtonLabel}
+          </EuiButtonEmpty>
+        </EuiFlexItem>
+      </EuiFlexGroup>
 
       {filterInvalid && (
-        <EuiFlexItem grow={false}>
+        <>
+          <EuiSpacer />
+
           <EuiCallOut
             color="danger"
-            title={i18n.translate(
-              'xpack.upgradeAssistant.checkupTab.controls.filterErrorMessageLabel',
-              {
-                defaultMessage: 'Filter invalid: {searchTermError}',
-                values: { searchTermError },
-              }
-            )}
+            title={i18nTexts.getInvalidSearchMessage(searchTermError!)}
             iconType="faceSad"
           />
-        </EuiFlexItem>
+        </>
       )}
-    </EuiFlexGroup>
+
+      <EuiHorizontalRule />
+    </>
   );
 };

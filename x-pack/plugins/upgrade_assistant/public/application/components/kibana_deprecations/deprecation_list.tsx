@@ -6,19 +6,23 @@
  */
 
 import React, { FunctionComponent, useState } from 'react';
-
-import { EuiSpacer } from '@elastic/eui';
+import { groupBy } from 'lodash';
+import { EuiHorizontalRule, EuiSpacer } from '@elastic/eui';
 
 // eslint-disable-next-line @kbn/eslint/no-restricted-paths
 import { DomainDeprecationDetails } from 'src/core/server/types';
-import { groupBy } from 'lodash';
+
 import { LevelFilterOption } from '../types';
 import { SearchBar, DeprecationListBar, DeprecationPagination } from '../shared';
-import { KibanaDeprecationAccordion } from './deprecation_group_item';
 import { LEVEL_MAP, DEPRECATIONS_PER_PAGE } from '../constants';
+import { KibanaDeprecationAccordion } from './deprecation_group_item';
+import { FlyoutContent } from './steps_flyout';
 
 interface Props {
   deprecations: DomainDeprecationDetails[];
+  showFlyout: (newFlyoutContent: FlyoutContent) => void;
+  reloadDeprecations: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const getFilteredDeprecations = (
@@ -48,7 +52,12 @@ const sortByLevelDesc = (a: DomainDeprecationDetails, b: DomainDeprecationDetail
   return -1 * (LEVEL_MAP[a.level] - LEVEL_MAP[b.level]);
 };
 
-export const KibanaDeprecationList: FunctionComponent<Props> = ({ deprecations }) => {
+export const KibanaDeprecationList: FunctionComponent<Props> = ({
+  deprecations,
+  showFlyout,
+  reloadDeprecations,
+  isLoading,
+}) => {
   const [currentFilter, setCurrentFilter] = useState<LevelFilterOption>(LevelFilterOption.all);
   const [search, setSearch] = useState('');
   const [expandState, setExpandState] = useState({
@@ -81,10 +90,10 @@ export const KibanaDeprecationList: FunctionComponent<Props> = ({ deprecations }
   // setCurrentPage(0);
 
   return (
-    <div data-test-subj="deprecationsContainer">
+    <>
       <SearchBar
-        isLoading={false} // TODO used for refresh
-        loadData={() => {}} // TODO implement
+        isLoading={isLoading}
+        loadData={reloadDeprecations}
         currentFilter={currentFilter}
         onFilterChange={changeFilter}
         onSearchChange={changeSearch}
@@ -92,28 +101,31 @@ export const KibanaDeprecationList: FunctionComponent<Props> = ({ deprecations }
         deprecationLevelsCount={deprecationLevelsCount}
       />
 
-      <EuiSpacer />
-
       <DeprecationListBar
         allDeprecationsCount={deprecations.length}
         filteredDeprecationsCount={filteredDeprecations.length}
         setExpandAll={setExpandAll}
       />
-      <EuiSpacer size="s" />
 
-      <div className="upgDeprecations">
+      <EuiHorizontalRule margin="m" />
+
+      <>
         {filteredDeprecations
           .slice(currentPage * DEPRECATIONS_PER_PAGE, (currentPage + 1) * DEPRECATIONS_PER_PAGE)
           .sort(sortByLevelDesc)
           .map((deprecation, index) => [
-            <KibanaDeprecationAccordion
-              {...{
-                key: expandState.expandNumber,
-                index,
-                deprecation,
-                forceExpand: expandState.forceExpand,
-              }}
-            />,
+            <div key={index}>
+              <KibanaDeprecationAccordion
+                {...{
+                  key: expandState.expandNumber,
+                  index,
+                  deprecation,
+                  forceExpand: expandState.forceExpand,
+                  showFlyout,
+                }}
+              />
+              <EuiHorizontalRule margin="s" />
+            </div>,
           ])}
 
         {/* Only show pagination if we have more than DEPRECATIONS_PER_PAGE */}
@@ -128,7 +140,7 @@ export const KibanaDeprecationList: FunctionComponent<Props> = ({ deprecations }
             />
           </>
         )}
-      </div>
-    </div>
+      </>
+    </>
   );
 };
