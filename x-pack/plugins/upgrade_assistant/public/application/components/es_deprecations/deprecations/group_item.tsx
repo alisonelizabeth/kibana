@@ -4,7 +4,7 @@
  * 2.0; you may not use this file except in compliance with the Elastic License
  * 2.0.
  */
-import React, { Fragment, FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import { EuiAccordion, EuiBadge } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 
@@ -45,13 +45,12 @@ export const EsDeprecationAccordion: FunctionComponent<Props> = ({
       id={id}
       key={id}
       data-test-subj={dataTestSubj}
-      className="upgDeprecations__item"
       initialIsOpen={forceExpand}
-      buttonContent={<span className="upgDeprecations__itemName">{title}</span>}
+      buttonContent={title}
       extraAction={
         <div>
           {hasIndices && (
-            <Fragment>
+            <>
               <EuiBadge color="hollow">
                 <span data-test-subj="indexCount">{numIndices}</span>{' '}
                 <FormattedMessage
@@ -61,7 +60,7 @@ export const EsDeprecationAccordion: FunctionComponent<Props> = ({
                 />
               </EuiBadge>
               &emsp;
-            </Fragment>
+            </>
           )}
           <DeprecationHealth
             single={currentGroupBy === GroupByOption.message}

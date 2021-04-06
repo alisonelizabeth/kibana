@@ -9,7 +9,7 @@ import { find, groupBy } from 'lodash';
 import React, { FunctionComponent, useState } from 'react';
 import { i18n } from '@kbn/i18n';
 
-import { EuiSpacer } from '@elastic/eui';
+import { EuiSpacer, EuiHorizontalRule } from '@elastic/eui';
 
 import { EnrichedDeprecationInfo } from '../../../../common/types';
 import { SectionLoading } from '../../../shared_imports';
@@ -76,14 +76,16 @@ const CalcFields = {
     deprecations: EnrichedDeprecationInfo[];
     currentFilter: LevelFilterOption;
     search: string;
+    currentGroupBy: GroupByOption;
   }) {
-    return groupBy(CalcFields.filteredDeprecations(props), GroupByOption.message);
+    return groupBy(CalcFields.filteredDeprecations(props), props.currentGroupBy);
   },
 
   numPages(props: {
     deprecations: EnrichedDeprecationInfo[];
     currentFilter: LevelFilterOption;
     search: string;
+    currentGroupBy: GroupByOption;
   }) {
     return Math.ceil(Object.keys(CalcFields.groups(props)).length / DEPRECATIONS_PER_PAGE);
   },
@@ -126,7 +128,7 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
     setExpandState({ forceExpand: expandAll, expandNumber: expandState.expandNumber + 1 });
   };
 
-  const availableGroupByOptions = () => {
+  const getAvailableGroupByOptions = () => {
     if (!deprecations) {
       return [];
     }
@@ -164,6 +166,7 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
       deprecations,
       currentFilter,
       search,
+      currentGroupBy,
     });
 
     content = (
@@ -178,37 +181,41 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
           totalDeprecationsCount={deprecations.length}
           deprecationLevelsCount={deprecationLevelsCount}
           groupByFilterProps={{
-            availableGroupByOptions: availableGroupByOptions(),
+            availableGroupByOptions: getAvailableGroupByOptions(),
             currentGroupBy,
             onGroupByChange: changeGroupBy,
           }}
         />
-        <EuiSpacer />
 
         <DeprecationListBar
           allDeprecationsCount={deprecations.length}
           filteredDeprecationsCount={filteredDeprecations.length}
           setExpandAll={setExpandAll}
         />
-        <EuiSpacer size="s" />
 
-        <div className="upgDeprecations">
+        <EuiHorizontalRule margin="m" />
+
+        <>
           {Object.keys(groups)
             .sort()
             // Apply pagination
             .slice(currentPage * DEPRECATIONS_PER_PAGE, (currentPage + 1) * DEPRECATIONS_PER_PAGE)
-            .map((groupName) => [
-              <EsDeprecationAccordion
-                {...{
-                  key: expandState.expandNumber,
-                  id: `depgroup-${groupName}`,
-                  dataTestSubj: `depgroup_${groupName.split(' ').join('_')}`,
-                  title: groupName,
-                  deprecations: groups[groupName],
-                  currentGroupBy,
-                  forceExpand: expandState.forceExpand,
-                }}
-              />,
+            .map((groupName, index) => [
+              <div key={`deprecation-${index}`}>
+                <EsDeprecationAccordion
+                  {...{
+                    key: expandState.expandNumber,
+                    id: `depgroup-${groupName}`,
+                    dataTestSubj: `depgroup_${groupName.split(' ').join('_')}`,
+                    title: groupName,
+                    deprecations: groups[groupName],
+                    currentGroupBy,
+                    forceExpand: expandState.forceExpand,
+                  }}
+                />
+                <EuiHorizontalRule margin="s" />
+              </div>,
+              ,
             ])}
 
           {/* Only show pagination if we have more than DEPRECATIONS_PER_PAGE. */}
@@ -221,13 +228,14 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
                   deprecations,
                   currentFilter,
                   search,
+                  currentGroupBy,
                 })}
                 activePage={currentPage}
                 setPage={setCurrentPage}
               />
             </>
           )}
-        </div>
+        </>
       </div>
     );
   } else if (error) {

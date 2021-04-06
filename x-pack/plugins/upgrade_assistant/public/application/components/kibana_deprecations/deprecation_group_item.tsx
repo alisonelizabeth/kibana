@@ -68,6 +68,7 @@ export const KibanaDeprecationAccordion: FunctionComponent<Props> = ({
             )}
           </EuiText>
         </EuiFlexItem>
+
         {correctiveActions?.manualSteps && (
           <EuiFlexItem grow={false}>
             <EuiButton
