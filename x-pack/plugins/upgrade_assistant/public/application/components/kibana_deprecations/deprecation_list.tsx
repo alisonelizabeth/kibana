@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { groupBy } from 'lodash';
 import { EuiHorizontalRule, EuiSpacer } from '@elastic/eui';
 
@@ -15,8 +15,9 @@ import { DomainDeprecationDetails } from 'src/core/server/types';
 import { LevelFilterOption } from '../types';
 import { SearchBar, DeprecationListBar, DeprecationPagination } from '../shared';
 import { LEVEL_MAP, DEPRECATIONS_PER_PAGE } from '../constants';
-import { KibanaDeprecationAccordion } from './deprecation_group_item';
+import { KibanaDeprecationAccordion } from './deprecation_item';
 import { FlyoutContent } from './steps_flyout';
+import { KibanaDeprecationErrors } from './kibana_deprecation_errors';
 
 interface Props {
   deprecations: DomainDeprecationDetails[];
@@ -86,8 +87,14 @@ export const KibanaDeprecationList: FunctionComponent<Props> = ({
 
   const filteredDeprecations = getFilteredDeprecations(deprecations, currentFilter, search);
 
-  // TODO reset the page count if total needed page count is less than current
-  // setCurrentPage(0);
+  const deprecationsWithErrors = deprecations.filter((dep) => dep.level === 'fetch_error');
+
+  useEffect(() => {
+    const pageCount = Math.ceil(filteredDeprecations.length / DEPRECATIONS_PER_PAGE);
+    if (currentPage >= pageCount) {
+      setCurrentPage(0);
+    }
+  }, [filteredDeprecations, currentPage]);
 
   return (
     <>
@@ -100,6 +107,13 @@ export const KibanaDeprecationList: FunctionComponent<Props> = ({
         totalDeprecationsCount={deprecations.length}
         deprecationLevelsCount={deprecationLevelsCount}
       />
+
+      {deprecationsWithErrors.length > 0 && (
+        <>
+          <KibanaDeprecationErrors errorType="pluginError" />
+          <EuiSpacer />
+        </>
+      )}
 
       <DeprecationListBar
         allDeprecationsCount={deprecations.length}
@@ -114,7 +128,7 @@ export const KibanaDeprecationList: FunctionComponent<Props> = ({
           .slice(currentPage * DEPRECATIONS_PER_PAGE, (currentPage + 1) * DEPRECATIONS_PER_PAGE)
           .sort(sortByLevelDesc)
           .map((deprecation, index) => [
-            <div key={`deprecation-${index}`}>
+            <div key={`kibana-deprecation-${index}`}>
               <KibanaDeprecationAccordion
                 {...{
                   key: expandState.expandNumber,

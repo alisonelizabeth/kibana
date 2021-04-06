@@ -5,7 +5,15 @@
  * 2.0.
  */
 import React, { FunctionComponent } from 'react';
-import { EuiAccordion, EuiButton, EuiFlexGroup, EuiFlexItem, EuiLink, EuiText } from '@elastic/eui';
+import {
+  EuiAccordion,
+  EuiButton,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiLink,
+  EuiText,
+  EuiCallOut,
+} from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 
 // eslint-disable-next-line @kbn/eslint/no-restricted-paths
@@ -58,13 +66,25 @@ export const KibanaDeprecationAccordion: FunctionComponent<Props> = ({
       <EuiFlexGroup justifyContent="spaceBetween">
         <EuiFlexItem>
           <EuiText size="s">
-            <p>{message}</p>
-            {documentationUrl && (
-              <p>
-                <EuiLink href={documentationUrl} external>
-                  {i18nTexts.docLinkText}
-                </EuiLink>
-              </p>
+            {level === 'fetch_error' ? (
+              <EuiCallOut
+                title={message}
+                color="warning"
+                iconType="alert"
+                data-test-subj={`${domainId}Error`}
+                size="s"
+              />
+            ) : (
+              <>
+                <p>{message}</p>
+                {documentationUrl && (
+                  <p>
+                    <EuiLink href={documentationUrl} external>
+                      {i18nTexts.docLinkText}
+                    </EuiLink>
+                  </p>
+                )}
+              </>
             )}
           </EuiText>
         </EuiFlexItem>

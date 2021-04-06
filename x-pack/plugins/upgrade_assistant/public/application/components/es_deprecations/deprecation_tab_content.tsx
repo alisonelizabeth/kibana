@@ -6,7 +6,7 @@
  */
 
 import { find, groupBy } from 'lodash';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { i18n } from '@kbn/i18n';
 
 import { EuiSpacer, EuiHorizontalRule } from '@elastic/eui';
@@ -22,7 +22,7 @@ import {
 } from '../shared';
 import { DEPRECATIONS_PER_PAGE } from '../constants';
 import { EsDeprecationErrors } from './es_deprecation_errors';
-import { EsDeprecationAccordion } from './deprecations/group_item';
+import { EsDeprecationAccordion } from './deprecations/deprecation_group_item';
 
 const i18nTexts = {
   isLoading: i18n.translate('xpack.upgradeAssistant.esDeprecations.loadingText', {
@@ -136,6 +136,21 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
     return Object.keys(GroupByOption).filter((opt) => find(deprecations, opt)) as GroupByOption[];
   };
 
+  useEffect(() => {
+    if (deprecations) {
+      const pageCount = CalcFields.numPages({
+        deprecations,
+        currentFilter,
+        search,
+        currentGroupBy,
+      });
+
+      if (currentPage >= pageCount) {
+        setCurrentPage(0);
+      }
+    }
+  }, [currentPage, deprecations, currentFilter, search, currentGroupBy]);
+
   if (deprecations && deprecations.length === 0) {
     return (
       <NoDeprecationsPrompt
@@ -201,7 +216,7 @@ export const DeprecationTabContent: FunctionComponent<CheckupTabProps> = ({
             // Apply pagination
             .slice(currentPage * DEPRECATIONS_PER_PAGE, (currentPage + 1) * DEPRECATIONS_PER_PAGE)
             .map((groupName, index) => [
-              <div key={`deprecation-${index}`}>
+              <div key={`es-deprecation-${index}`}>
                 <EsDeprecationAccordion
                   {...{
                     key: expandState.expandNumber,
