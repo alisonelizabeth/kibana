@@ -9,12 +9,13 @@ import React, { useState } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
 import {
   EuiButton,
-  EuiInMemoryTable,
   EuiLink,
   Query,
   EuiLoadingSpinner,
   EuiToolTip,
   EuiButtonIcon,
+  EuiBasicTable,
+  CriteriaWithPagination,
 } from '@elastic/eui';
 
 import { SnapshotDetails } from '../../../../../../common/types';
@@ -34,6 +35,7 @@ interface Props {
   repositoryFilter?: string;
   policyFilter?: string;
   onSnapshotDeleted: (snapshotsDeleted: Array<{ snapshot: string; repository: string }>) => void;
+  pagination: any; // TODO fix
 }
 
 const getLastSuccessfulManagedSnapshot = (
@@ -59,6 +61,7 @@ export const SnapshotTable: React.FunctionComponent<Props> = ({
   onSnapshotDeleted,
   repositoryFilter,
   policyFilter,
+  pagination,
 }) => {
   const { i18n, uiMetricService, history } = useServices();
   const [selectedItems, setSelectedItems] = useState<SnapshotDetails[]>([]);
@@ -264,16 +267,21 @@ export const SnapshotTable: React.FunctionComponent<Props> = ({
   ];
 
   // By default, we'll display the most recent snapshots at the top of the table.
-  const sorting = {
-    sort: {
-      field: 'startTimeInMillis',
-      direction: 'desc' as const,
-    },
-  };
+  // const sorting = {
+  //   sort: {
+  //     field: 'startTimeInMillis',
+  //     direction: 'desc' as const,
+  //   },
+  // };
 
-  const pagination = {
-    initialPageSize: 20,
-    pageSizeOptions: [10, 20, 50],
+  // const pagination = {
+  //   initialPageSize: 20,
+  //   pageSizeOptions: [10, 20, 50],
+  // };
+
+  const onTableChange = ({ page }: CriteriaWithPagination<SnapshotDetails>) => {
+    const { index, size } = page;
+    reload({ query: { size: 2 } });
   };
 
   const searchSchema = {
@@ -342,7 +350,7 @@ export const SnapshotTable: React.FunctionComponent<Props> = ({
       <EuiButton
         color="secondary"
         iconType="refresh"
-        onClick={reload}
+        onClick={() => reload()}
         data-test-subj="reloadButton"
       >
         <FormattedMessage
@@ -387,15 +395,19 @@ export const SnapshotTable: React.FunctionComponent<Props> = ({
   };
 
   return (
-    <EuiInMemoryTable
+    <EuiBasicTable
       items={snapshots}
       itemId="uuid"
       columns={columns}
-      search={search}
-      sorting={sorting}
+      // search={search}
+      // sorting={sorting}
       isSelectable={true}
       selection={selection}
-      pagination={pagination}
+      pagination={{
+        ...pagination,
+        pageSizeOptions: [2, 3, 4],
+      }}
+      onChange={onTableChange}
       rowProps={() => ({
         'data-test-subj': 'row',
       })}

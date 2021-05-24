@@ -43,9 +43,9 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
   const {
     error,
     isLoading,
-    data: { snapshots = [], repositories = [], policies = [], errors = {} },
+    data: { snapshots = [], repositories = [], policies = [], errors = {}, pagination },
     resendRequest: reload,
-  } = useLoadSnapshots();
+  } = useLoadSnapshots({ size: 1 }); // TODO hard-coded size query
 
   const { uiMetricService } = useServices();
   const { docLinks } = useCore();
@@ -333,6 +333,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
           onSnapshotDeleted={onSnapshotDeleted}
           repositoryFilter={filteredRepository}
           policyFilter={filteredPolicy}
+          pagination={pagination}
         />
       </Fragment>
     );

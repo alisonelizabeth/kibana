@@ -8,7 +8,7 @@
 
 import { useEffect, useCallback, useState, useRef, useMemo } from 'react';
 
-import { HttpSetup } from '../../../../../src/core/public';
+import { HttpFetchQuery, HttpSetup } from '../../../../../src/core/public';
 import { sendRequest, SendRequestConfig } from './send_request';
 
 export interface UseRequestConfig extends SendRequestConfig {
@@ -22,7 +22,7 @@ export interface UseRequestResponse<D = any, E = Error> {
   isLoading: boolean;
   error: E | null;
   data?: D | null;
-  resendRequest: () => void;
+  resendRequest: (config?: { query?: HttpFetchQuery }) => void;
 }
 
 export const useRequest = <D = any, E = Error>(
@@ -66,7 +66,13 @@ export const useRequest = <D = any, E = Error>(
   }, [path, method, queryStringified, bodyStringified]);
 
   const resendRequest = useCallback(
-    async (asSystemRequest?: boolean) => {
+    async ({
+      asSystemRequest,
+      resendRequestQuery,
+    }: {
+      asSystemRequest?: boolean;
+      resendRequestQuery?: HttpFetchQuery;
+    } = {}) => {
       // If we're on an interval, this allows us to reset it if the user has manually requested the
       // data, to avoid doubled-up requests.
       clearPollInterval();
@@ -80,7 +86,12 @@ export const useRequest = <D = any, E = Error>(
       // Any requests that are sent in the background (without user interaction) should be flagged as "system requests". This should not be
       // confused with any terminology in Elasticsearch. This is a Kibana-specific construct that allows the server to differentiate between
       // user-initiated and requests "system"-initiated requests, for purposes like security features.
-      const requestPayload = { ...requestBody, asSystemRequest };
+      const requestPayload = {
+        ...requestBody,
+        asSystemRequest,
+        query: resendRequestQuery ?? requestBody.query,
+      };
+
       const response = await sendRequest<D, E>(httpClient, requestPayload);
       const { data: serializedResponseData, error: responseError } = response;
 
@@ -115,7 +126,7 @@ export const useRequest = <D = any, E = Error>(
 
     if (pollIntervalMs) {
       pollIntervalIdRef.current = setTimeout(
-        () => resendRequest(true), // This is happening on an interval in the background, so we flag it as a "system request".
+        () => resendRequest({ asSystemRequest: true }), // This is happening on an interval in the background, so we flag it as a "system request".
         pollIntervalMs
       );
     }
@@ -147,9 +158,12 @@ export const useRequest = <D = any, E = Error>(
     };
   }, [clearPollInterval]);
 
-  const resendRequestForConsumer = useCallback(() => {
-    return resendRequest();
-  }, [resendRequest]);
+  const resendRequestForConsumer = useCallback(
+    (config?: { query?: HttpFetchQuery }) => {
+      return resendRequest({ resendRequestQuery: config?.query });
+    },
+    [resendRequest]
+  );
 
   return {
     isInitialRequest: isInitialRequestRef.current,

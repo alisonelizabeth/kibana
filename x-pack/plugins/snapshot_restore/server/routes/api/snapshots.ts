@@ -19,7 +19,14 @@ export function registerSnapshotsRoutes({
 }: RouteDependencies) {
   // GET all snapshots
   router.get(
-    { path: addBasePath('snapshots'), validate: false },
+    {
+      path: addBasePath('snapshots'),
+      validate: {
+        query: schema.object({
+          size: schema.number(),
+        }),
+      },
+    },
     license.guardApiRoute(async (ctx, req, res) => {
       const { client: clusterClient } = ctx.core.elasticsearch;
 
@@ -100,9 +107,28 @@ export function registerSnapshotsRoutes({
 
       await Promise.all(repositoryNames.map(fetchSnapshotsForRepository));
 
+      const { size } = req.query;
+
+      // Testing purposes only -->
+      const slicedSnapshots = size === 1 ? snapshots.slice(0, 2) : snapshots.slice(2, 6);
+
+      const pagination1 = {
+        pageIndex: 0,
+        pageSize: 3,
+        totalItemCount: snapshots.length,
+      };
+
+      const pagination2 = {
+        pageIndex: 1,
+        pageSize: 3,
+        totalItemCount: snapshots.length,
+      };
+      // <-- Testing purposes only
+
       return res.ok({
         body: {
-          snapshots,
+          snapshots: slicedSnapshots,
+          pagination: size === 1 ? pagination1 : pagination2,
           policies,
           repositories,
           errors,

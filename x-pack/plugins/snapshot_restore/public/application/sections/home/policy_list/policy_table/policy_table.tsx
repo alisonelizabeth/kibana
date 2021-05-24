@@ -361,7 +361,7 @@ export const PolicyTable: React.FunctionComponent<Props> = ({
         key="reloadPolicies"
         color="secondary"
         iconType="refresh"
-        onClick={reload}
+        onClick={() => reload()}
         data-test-subj="reloadButton"
       >
         <FormattedMessage
