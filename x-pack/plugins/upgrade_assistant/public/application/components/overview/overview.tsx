@@ -22,8 +22,8 @@ import {
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
-
 import { RouteComponentProps } from 'react-router-dom';
+import { LogStream } from '../../../../../infra/public';
 import { useAppContext } from '../../app_context';
 import { LatestMinorBanner } from '../latest_minor_banner';
 import { ESDeprecationStats } from './es_stats';
@@ -90,6 +90,9 @@ export const DeprecationsOverview: FunctionComponent<Props> = ({ history }) => {
     breadcrumbs.setBreadcrumbs('overview');
   }, [breadcrumbs]);
 
+  const endTimestamp = Date.now();
+  const startTimestamp = endTimestamp - 30 * 60 * 1000; // 30 minutes
+
   return (
     <EuiPageBody>
       <EuiPageContent data-test-subj="overviewPageContent">
@@ -112,14 +115,10 @@ export const DeprecationsOverview: FunctionComponent<Props> = ({ history }) => {
             <EuiText data-test-subj="overviewDetail" grow={false}>
               <p>{i18nTexts.pageDescription}</p>
             </EuiText>
-
             <EuiSpacer />
-
             {/* Remove this in last minor of the current major (e.g., 7.15) */}
             <LatestMinorBanner />
-
             <EuiSpacer size="xl" />
-
             {/* Deprecation stats */}
             <EuiFlexGroup>
               <EuiFlexItem>
@@ -130,9 +129,7 @@ export const DeprecationsOverview: FunctionComponent<Props> = ({ history }) => {
                 <KibanaDeprecationStats history={history} />
               </EuiFlexItem>
             </EuiFlexGroup>
-
             <EuiSpacer />
-
             {/* Deprecation logging */}
             <EuiFlexGroup>
               <EuiFlexItem>
@@ -154,6 +151,11 @@ export const DeprecationsOverview: FunctionComponent<Props> = ({ history }) => {
                 <DeprecationLoggingToggle />
               </EuiFlexItem>
             </EuiFlexGroup>
+            <LogStream
+              sourceId="deprecation_logs"
+              startTimestamp={startTimestamp}
+              endTimestamp={endTimestamp}
+            />
           </>
         </EuiPageContentBody>
       </EuiPageContent>

@@ -19,9 +19,9 @@ export async function mountManagementSection(
   params: ManagementAppMountParams,
   kibanaVersionInfo: KibanaVersionContext
 ) {
-  const [
-    { i18n, docLinks, notifications, application, deprecations },
-  ] = await coreSetup.getStartServices();
+  const [startServices, startPluginDeps] = await coreSetup.getStartServices();
+
+  const { i18n, docLinks, notifications, application, deprecations } = startServices;
 
   const { element, history, setBreadcrumbs } = params;
   const { http } = coreSetup;
@@ -43,5 +43,7 @@ export async function mountManagementSection(
     breadcrumbs: breadcrumbService,
     getUrlForApp: application.getUrlForApp,
     deprecations,
+    startServices,
+    startPluginDeps,
   });
 }

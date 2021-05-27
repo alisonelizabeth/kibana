@@ -20,6 +20,7 @@ import {
 import { CloudSetup } from '../../cloud/server';
 import { PluginSetupContract as FeaturesPluginSetup } from '../../features/server';
 import { LicensingPluginSetup } from '../../licensing/server';
+import { InfraPluginSetup } from '../../infra/server';
 
 import { CredentialStore, credentialStoreFactory } from './lib/reindexing/credential_store';
 import { ReindexWorker } from './lib/reindexing';
@@ -39,6 +40,7 @@ interface PluginsSetup {
   licensing: LicensingPluginSetup;
   features: FeaturesPluginSetup;
   cloud?: CloudSetup;
+  infra: InfraPluginSetup;
 }
 
 export class UpgradeAssistantServerPlugin implements Plugin {
@@ -68,7 +70,7 @@ export class UpgradeAssistantServerPlugin implements Plugin {
 
   setup(
     { http, getStartServices, capabilities, savedObjects }: CoreSetup,
-    { usageCollection, cloud, features, licensing }: PluginsSetup
+    { usageCollection, cloud, features, licensing, infra }: PluginsSetup
   ) {
     this.licensing = licensing;
 
@@ -85,6 +87,20 @@ export class UpgradeAssistantServerPlugin implements Plugin {
           requiredClusterPrivileges: ['manage'],
           ui: [],
         },
+      ],
+    });
+
+    infra.defineInternalSourceConfiguration('deprecation_logs', {
+      name: 'deprecationLogs',
+      description: 'deprecation logs',
+      logIndices: {
+        type: 'index_name',
+        indexName: '.logs-deprecation.elasticsearch-default',
+      },
+      logColumns: [
+        { timestampColumn: { id: 'timestampField' } },
+        { fieldColumn: { id: 'logLevelField', field: 'log.level' } },
+        { messageColumn: { id: 'messageField' } },
       ],
     });
 
