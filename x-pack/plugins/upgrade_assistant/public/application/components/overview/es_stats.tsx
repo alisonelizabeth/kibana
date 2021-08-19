@@ -73,7 +73,7 @@ interface Props {
 export const ESDeprecationStats: FunctionComponent<Props> = ({ history }) => {
   const { api } = useAppContext();
 
-  const { data: esDeprecations, isLoading, error } = api.useLoadUpgradeStatus();
+  const { data: esDeprecations, isLoading, error } = api.useLoadEsDeprecations();
 
   const allDeprecations = esDeprecations?.deprecations ?? [];
   const criticalDeprecations = allDeprecations.filter(
