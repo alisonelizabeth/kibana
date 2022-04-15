@@ -1,0 +1,10 @@
+{
+  "id": "ecma",
+  "version": "kibana",
+  "server": true,
+  "ui": false,
+  "owner": {
+    "name": "Stack Management",
+    "githubTeam": "kibana-stack-management"
+  }
+}
