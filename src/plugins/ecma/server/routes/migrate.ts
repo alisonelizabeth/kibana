@@ -13,15 +13,28 @@ import { RouteDependencies } from '../types';
 
 /**
  * For POC purposes, I am hard-coding the following values:
- * - The ES endpoint from the cloud cluster being used for testing
- * - The ES repository name to be shared on the cloud and on-prem cluster
- * - The name of the snapshot to be created. This will likely remain hard-coded, but renamed more appropriately.
- * - The array of indices to back up. In the future, I'd expect a user would choose these values in the UI.
+ *  - SNAPSHOT: The name of the snapshot to be created. This will likely remain hard-coded, but to be renamed more appropriately.
+ *  - INDICES: The array of indices to back up. In the future, I'd expect a user would choose these values in the UI.
+ *  - CLOUD_ES_ENDPOINT: The ES endpoint from the cloud deployment being used for testing.
+ *  - CLOUD_ES_PASSWORD: The ES password from the cloud deployment being used for testing.
+ *  - SHARED_S3_REPOSITORY: The ES repository name. This must be the same on cloud and on-prem.
+ *  - SHARED_S3_CLIENT: The S3 client name of the shared repository.
+ *  - SHARED_S3_BUCKET: The S3 bucket name of the shared repository.
  */
-const ES_ENDPOINT = ''; // TODO Cloud ES endpoint url
-const REPOSITORY = 'ecma_repo';
-const SNAPSHOT = 'ecma_snapshot';
+const SNAPSHOT = 'ecma_demo_snapshot';
 const INDICES = ['kibana_sample_data_logs'];
+const CLOUD_ES_ENDPOINT = '';
+const CLOUD_ES_PASSWORD = '';
+const SHARED_S3_REPOSITORY = 'ecma_repo';
+const SHARED_S3_CLIENT = '';
+const SHARED_S3_BUCKET = '';
+
+/**
+ * Assumptions/Pre-reqs:
+ * 1. A cloud deployment is configured with a readonly S3 repository
+ * 2. On-prem Kibana is configured with data (e.g., sample data logs)
+ * 3. On-prem ES is configured with S3 credentials via ES keystore
+ */
 
 export const registerMigrateRoutes = ({
   router,
@@ -36,49 +49,38 @@ export const registerMigrateRoutes = ({
       const { client: clusterClient } = context.core.elasticsearch;
 
       try {
-        // 1. Create a snapshot (on-prem repository was created manually w/ same S3 bucket used on cloud deployment)
-        const {
-          body: { snapshot },
-        } = await clusterClient.asCurrentUser.snapshot.create({
+        // 1. Create a repository on-prem
+        await clusterClient.asCurrentUser.snapshot.createRepository({
+          name: SHARED_S3_REPOSITORY,
+          body: {
+            type: 's3',
+            settings: {
+              bucket: SHARED_S3_BUCKET,
+              client: SHARED_S3_CLIENT,
+            },
+          },
+          verify: false,
+        });
+
+        // 2. Create a snapshot on-prem using the shared repository
+        await clusterClient.asCurrentUser.snapshot.create({
           snapshot: SNAPSHOT,
-          repository: REPOSITORY,
+          repository: SHARED_S3_REPOSITORY,
           include_global_state: true,
           indices: INDICES,
           feature_states: ['kibana'],
           wait_for_completion: true,
         });
 
-        // 2. Create the repository on the cloud cluster using the same name as the on-prem repository
-        const createRepositoryAPI = `${ES_ENDPOINT}/_snapshot/${REPOSITORY}`;
-
-        const repositoryOptions = {
-          method: 'PUT',
-          headers: {
-            // TODO provide auth from cloud deployment
-            Authorization: `Basic ${Buffer.from(`XX:XXXX`).toString('base64')}`,
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            type: 's3',
-            // TODO provide s3 settings from cloud deployment
-            settings: {
-              client: '',
-              bucket: '',
-            },
-          }),
-        };
-
-        await fetch(createRepositoryAPI, repositoryOptions);
-
         // 3. Restore the snapshot on the cloud cluster
-        const restoreSnapshotAPI = `${ES_ENDPOINT}/_snapshot/${REPOSITORY}/${SNAPSHOT}/_restore`;
+        const restoreSnapshotAPI = `${CLOUD_ES_ENDPOINT}/_snapshot/${SHARED_S3_REPOSITORY}/${SNAPSHOT}/_restore`;
 
         const restoreOptions = {
           method: 'POST',
           headers: {
-            // TODO provide auth from cloud deployment
-            Authorization: `Basic ${Buffer.from(`XX:XXXX`).toString('base64')}`,
+            Authorization: `Basic ${Buffer.from(`elastic:${CLOUD_ES_PASSWORD}`).toString(
+              'base64'
+            )}`,
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
@@ -92,7 +94,7 @@ export const registerMigrateRoutes = ({
         await fetch(restoreSnapshotAPI, restoreOptions);
 
         return response.ok({
-          body: 'ok', // TEMP
+          body: 'ok', // TEMP; we'd ultimately return the URL to the new Kibana instance on cloud
         });
       } catch (error) {
         return handleEsError({ error, response });
