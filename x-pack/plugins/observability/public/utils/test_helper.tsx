@@ -7,6 +7,7 @@
 
 import { render as testLibRender } from '@testing-library/react';
 import { AppMountParameters } from '@kbn/core/public';
+
 import { coreMock } from '@kbn/core/public/mocks';
 import React from 'react';
 import { __IntlProvider as IntlProvider } from '@kbn/i18n-react';
@@ -15,6 +16,7 @@ import { KibanaPageTemplate } from '@kbn/shared-ux-components';
 import translations from '@kbn/translations-plugin/translations/ja-JP.json';
 import { EuiThemeProvider } from '@kbn/kibana-react-plugin/common';
 import { dataPluginMock } from '@kbn/data-plugin/public/mocks';
+import { ObservabilityPublicPluginsStart } from '../plugin';
 import { PluginContext } from '../context/plugin_context';
 import { createObservabilityRuleTypeRegistryMock } from '../rules/observability_rule_type_registry_mock';
 
@@ -22,6 +24,13 @@ const appMountParameters = { setHeaderActionMenu: () => {} } as unknown as AppMo
 
 export const core = coreMock.createStart();
 export const data = dataPluginMock.createStartContract();
+const dataViewsMock = () => {
+  return {};
+};
+
+const plugins = {
+  dataViews: dataViewsMock,
+} as unknown as ObservabilityPublicPluginsStart;
 
 const config = {
   unsafe: {
@@ -41,6 +50,8 @@ export const render = (component: React.ReactNode) => {
           value={{
             appMountParameters,
             config,
+            core,
+            plugins,
             observabilityRuleTypeRegistry,
             ObservabilityPageTemplate: KibanaPageTemplate,
             kibanaFeatures: [],

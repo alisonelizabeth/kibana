@@ -12,6 +12,8 @@ import { matchPath, useLocation } from 'react-router-dom';
 import useObservable from 'react-use/lib/useObservable';
 import type { Observable } from 'rxjs';
 import type { ApplicationStart } from '@kbn/core/public';
+import { SharedUxServicesProvider } from '@kbn/shared-ux-services';
+import type { SharedUXPluginStart } from '@kbn/shared-ux-plugin/public';
 import { KibanaPageTemplate, KibanaPageTemplateProps } from '@kbn/shared-ux-components';
 import type { NavigationSection } from '../../../services/navigation_registry';
 import { NavNameWithBadge, hideBadge } from './nav_name_with_badge';
@@ -39,6 +41,7 @@ export interface ObservabilityPageTemplateDependencies {
   getUrlForApp: ApplicationStart['getUrlForApp'];
   navigateToApp: ApplicationStart['navigateToApp'];
   navigationSections$: Observable<NavigationSection[]>;
+  getSharedUXContext: SharedUXPluginStart['getContextServices'];
 }
 
 export type ObservabilityPageTemplateProps = ObservabilityPageTemplateDependencies &
@@ -50,12 +53,14 @@ export function ObservabilityPageTemplate({
   getUrlForApp,
   navigateToApp,
   navigationSections$,
+  getSharedUXContext,
   showSolutionNav = true,
   ...pageTemplateProps
 }: ObservabilityPageTemplateProps): React.ReactElement | null {
   const sections = useObservable(navigationSections$, []);
   const currentAppId = useObservable(currentAppId$, undefined);
   const { pathname: currentPath } = useLocation();
+  const sharedUXServices = getSharedUXContext();
 
   const sideNavItems = useMemo<Array<EuiSideNavItemType<unknown>>>(
     () =>
@@ -120,23 +125,25 @@ export function ObservabilityPageTemplate({
   );
 
   return (
-    <KibanaPageTemplate
-      restrictWidth={false}
-      {...pageTemplateProps}
-      solutionNav={
-        showSolutionNav
-          ? {
-              icon: 'logoObservability',
-              items: sideNavItems,
-              name: sideNavTitle,
-            }
-          : undefined
-      }
-    >
-      <ObservabilityOverviewTour navigateToApp={navigateToApp}>
-        {children}
-      </ObservabilityOverviewTour>
-    </KibanaPageTemplate>
+    <SharedUxServicesProvider {...sharedUXServices}>
+      <KibanaPageTemplate
+        restrictWidth={false}
+        {...pageTemplateProps}
+        solutionNav={
+          showSolutionNav
+            ? {
+                icon: 'logoObservability',
+                items: sideNavItems,
+                name: sideNavTitle,
+              }
+            : undefined
+        }
+      >
+        <ObservabilityOverviewTour navigateToApp={navigateToApp}>
+          {children}
+        </ObservabilityOverviewTour>
+      </KibanaPageTemplate>
+    </SharedUxServicesProvider>
   );
 }
 

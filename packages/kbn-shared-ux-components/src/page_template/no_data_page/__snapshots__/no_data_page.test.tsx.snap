@@ -3,11 +3,12 @@
 exports[`NoDataPage render 1`] = `
 <div
   className="kbnNoDataPageContents"
+  data-test-subj="kbnNoDataPage"
 >
   <EuiText
     textAlign="center"
   >
-    <ForwardRef
+    <KibanaSolutionAvatar
       iconType="logoKibana"
       name="Analytics"
       size="xxl"
