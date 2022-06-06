@@ -28,6 +28,7 @@ interface TourStep {
   anchor: ElementTarget;
   anchorPosition: EuiTourStepProps['anchorPosition'];
   title: EuiTourStepProps['title'];
+  dataTestSubj: string;
 }
 
 const minWidth: EuiTourStepProps['minWidth'] = 360;
@@ -54,6 +55,7 @@ const tourStepsConfig: TourStep[] = [
     ),
     anchor: `[id^="KibanaPageTemplateSolutionNav"]`,
     anchorPosition: 'rightUp',
+    dataTestSubj: 'overviewStep',
   },
   {
     title: i18n.translate('xpack.observability.tour.streamStep.tourTitle', {
@@ -69,6 +71,7 @@ const tourStepsConfig: TourStep[] = [
     ),
     anchor: `[data-nav-id="stream"]`,
     anchorPosition: 'rightUp',
+    dataTestSubj: 'streamStep',
   },
   {
     title: i18n.translate('xpack.observability.tour.metricsExplorerStep.tourTitle', {
@@ -84,6 +87,7 @@ const tourStepsConfig: TourStep[] = [
     ),
     anchor: `[data-nav-id="metrics_explorer"]`,
     anchorPosition: 'rightUp',
+    dataTestSubj: 'metricsExplorerStep',
   },
   {
     title: i18n.translate('xpack.observability.tour.tracesStep.tourTitle', {
@@ -99,6 +103,7 @@ const tourStepsConfig: TourStep[] = [
     ),
     anchor: `[data-nav-id="traces"]`,
     anchorPosition: 'rightUp',
+    dataTestSubj: 'tracesStep',
   },
   {
     title: i18n.translate('xpack.observability.tour.alertsStep.tourTitle', {
@@ -114,6 +119,7 @@ const tourStepsConfig: TourStep[] = [
     ),
     anchor: `[data-nav-id="alerts"]`,
     anchorPosition: 'rightUp',
+    dataTestSubj: 'alertStep',
   },
   {
     title: i18n.translate('xpack.observability.tour.guidedSetupStep.tourTitle', {
@@ -128,6 +134,7 @@ const tourStepsConfig: TourStep[] = [
     ),
     anchor: '#guidedSetupButton',
     anchorPosition: 'rightUp',
+    dataTestSubj: 'guidedSetupStep',
   },
 ];
 
@@ -143,14 +150,24 @@ const getSteps = ({
   const footerAction = (
     <EuiFlexGroup gutterSize="s" alignItems="baseline">
       <EuiFlexItem>
-        <EuiButtonEmpty onClick={() => endTour()} size="xs" color="text">
+        <EuiButtonEmpty
+          onClick={() => endTour()}
+          size="xs"
+          color="text"
+          data-test-subj="skipButton"
+        >
           {i18n.translate('xpack.observability.tour.skipButtonLabel', {
             defaultMessage: 'Skip',
           })}
         </EuiButtonEmpty>
       </EuiFlexItem>
       <EuiFlexItem>
-        <EuiButton onClick={() => incrementStep()} size="s" color="success">
+        <EuiButton
+          onClick={() => incrementStep()}
+          size="s"
+          color="success"
+          data-test-subj="nextButton"
+        >
           {i18n.translate('xpack.observability.tour.nextButtonLabel', {
             defaultMessage: 'Next',
           })}
@@ -159,11 +176,20 @@ const getSteps = ({
     </EuiFlexGroup>
   );
 
+  const lastStepFooterAction = (
+    <EuiButtonEmpty size="xs" color="text" onClick={() => endTour()} data-test-subj="endButton">
+      {i18n.translate('xpack.observability.tour.endButtonLabel', {
+        defaultMessage: 'End tour',
+      })}
+    </EuiButtonEmpty>
+  );
+
   return tourStepsConfig.map((stepConfig, index) => {
     const step = index + 1;
+    const { dataTestSubj, ...tourStepProps } = stepConfig;
     return (
       <EuiTourStep
-        {...stepConfig}
+        {...tourStepProps}
         key={step}
         subtitle={i18n.translate('xpack.observability.tour.subtitleLabel', {
           defaultMessage: 'Step {stepNumber}',
@@ -178,8 +204,11 @@ const getSteps = ({
         repositionOnScroll={repositionOnScroll}
         stepsTotal={tourStepsConfig.length}
         isStepOpen={step === activeStep}
-        footerAction={activeStep === tourStepsConfig.length ? undefined : footerAction}
         onFinish={() => endTour()}
+        footerAction={activeStep === tourStepsConfig.length ? lastStepFooterAction : footerAction}
+        panelProps={{
+          'data-test-subj': dataTestSubj,
+        }}
       />
     );
   });
@@ -247,12 +276,12 @@ export function ObservabilityOverviewTour({
   useEffect(() => {
     // The user must be on the overview page to view the last step in the tour
     // TODO this logic feels brittle if we ever change the steps/step order
-    if (isOverviewPage === false && activeStep === tourStepsConfig.length) {
+    if (isTourActive && isOverviewPage === false && activeStep === tourStepsConfig.length) {
       navigateToApp(observabilityAppId, {
         path: overviewPath,
       });
     }
-  }, [activeStep, isOverviewPage, navigateToApp]);
+  }, [activeStep, isOverviewPage, isTourActive, navigateToApp]);
 
   return (
     <>
