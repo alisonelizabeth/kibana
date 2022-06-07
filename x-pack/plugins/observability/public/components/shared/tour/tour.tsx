@@ -17,11 +17,14 @@ import {
   EuiTourStepProps,
   EuiText,
   ElementTarget,
+  EuiOverlayMask,
 } from '@elastic/eui';
 import { useLocation } from 'react-router-dom';
 import { ApplicationStart } from '@kbn/core/public';
 import { observabilityAppId } from '../../../../common';
 import { useHasData } from '../../../hooks/use_has_data';
+
+import './tour.scss';
 
 interface TourStep {
   content: EuiTourStepProps['content'];
@@ -29,6 +32,7 @@ interface TourStep {
   anchorPosition: EuiTourStepProps['anchorPosition'];
   title: EuiTourStepProps['title'];
   dataTestSubj: string;
+  showOverlay: boolean;
 }
 
 const minWidth: EuiTourStepProps['minWidth'] = 360;
@@ -37,6 +41,7 @@ const offset: EuiTourStepProps['offset'] = 30;
 const repositionOnScroll: EuiTourStepProps['repositionOnScroll'] = false;
 
 const overviewPath = '/overview';
+const guidedSetupStep = 6;
 
 const observabilityTourStorageKey = 'xpack.observability.tourState';
 
@@ -56,6 +61,7 @@ const tourStepsConfig: TourStep[] = [
     anchor: `[id^="KibanaPageTemplateSolutionNav"]`,
     anchorPosition: 'rightUp',
     dataTestSubj: 'overviewStep',
+    showOverlay: true,
   },
   {
     title: i18n.translate('xpack.observability.tour.streamStep.tourTitle', {
@@ -72,6 +78,7 @@ const tourStepsConfig: TourStep[] = [
     anchor: `[data-nav-id="stream"]`,
     anchorPosition: 'rightUp',
     dataTestSubj: 'streamStep',
+    showOverlay: true,
   },
   {
     title: i18n.translate('xpack.observability.tour.metricsExplorerStep.tourTitle', {
@@ -88,6 +95,7 @@ const tourStepsConfig: TourStep[] = [
     anchor: `[data-nav-id="metrics_explorer"]`,
     anchorPosition: 'rightUp',
     dataTestSubj: 'metricsExplorerStep',
+    showOverlay: true,
   },
   {
     title: i18n.translate('xpack.observability.tour.tracesStep.tourTitle', {
@@ -104,6 +112,7 @@ const tourStepsConfig: TourStep[] = [
     anchor: `[data-nav-id="traces"]`,
     anchorPosition: 'rightUp',
     dataTestSubj: 'tracesStep',
+    showOverlay: true,
   },
   {
     title: i18n.translate('xpack.observability.tour.alertsStep.tourTitle', {
@@ -120,6 +129,7 @@ const tourStepsConfig: TourStep[] = [
     anchor: `[data-nav-id="alerts"]`,
     anchorPosition: 'rightUp',
     dataTestSubj: 'alertStep',
+    showOverlay: true,
   },
   {
     title: i18n.translate('xpack.observability.tour.guidedSetupStep.tourTitle', {
@@ -135,6 +145,7 @@ const tourStepsConfig: TourStep[] = [
     anchor: '#guidedSetupButton',
     anchorPosition: 'rightUp',
     dataTestSubj: 'guidedSetupStep',
+    showOverlay: false,
   },
 ];
 
@@ -186,7 +197,7 @@ const getSteps = ({
 
   return tourStepsConfig.map((stepConfig, index) => {
     const step = index + 1;
-    const { dataTestSubj, ...tourStepProps } = stepConfig;
+    const { dataTestSubj, showOverlay, ...tourStepProps } = stepConfig;
     return (
       <EuiTourStep
         {...tourStepProps}
@@ -254,6 +265,7 @@ export function ObservabilityOverviewTour({
   const { pathname: currentPath } = useLocation();
 
   const isOverviewPage = currentPath === overviewPath;
+  const { showOverlay } = tourStepsConfig[activeStep - 1];
 
   const incrementStep = useCallback(() => {
     setActiveStep((prevState) => prevState + 1);
@@ -274,9 +286,8 @@ export function ObservabilityOverviewTour({
   }, [isTourActive, activeStep]);
 
   useEffect(() => {
-    // The user must be on the overview page to view the last step in the tour
-    // TODO this logic feels brittle if we ever change the steps/step order
-    if (isTourActive && isOverviewPage === false && activeStep === tourStepsConfig.length) {
+    // The user must be on the overview page to view the guided setup step in the tour
+    if (isTourActive && isOverviewPage === false && activeStep === guidedSetupStep) {
       navigateToApp(observabilityAppId, {
         path: overviewPath,
       });
@@ -286,7 +297,17 @@ export function ObservabilityOverviewTour({
   return (
     <>
       {children}
-      {shouldShowTour() && getSteps({ activeStep, incrementStep, endTour })}
+      {shouldShowTour() && (
+        <>
+          {getSteps({ activeStep, incrementStep, endTour })}
+          {showOverlay && (
+            <EuiOverlayMask
+              className="observabilityTour__overlayMask"
+              headerZindexLocation="below"
+            />
+          )}
+        </>
+      )}
     </>
   );
 }
