@@ -28,3 +28,4 @@ yarn storybook --site presentation
 yarn storybook --site security_solution
 yarn storybook --site shared_ux
 yarn storybook --site ui_actions_enhanced
+yarn storybook --site core_chrome

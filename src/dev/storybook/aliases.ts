@@ -39,4 +39,5 @@ export const storybookAliases = {
   security_solution: 'x-pack/plugins/security_solution/.storybook',
   shared_ux: 'packages/kbn-shared-ux-storybook/src/config',
   ui_actions_enhanced: 'src/plugins/ui_actions_enhanced/.storybook',
+  core_chrome: 'src/core/public/chrome/.storybook',
 };
