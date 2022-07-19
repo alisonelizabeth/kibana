@@ -19,38 +19,44 @@ export default function ApiTest({ getService }: FtrProviderContext) {
   const end = new Date('2021-01-01T00:15:00.000Z').getTime() - 1;
 
   async function callApi({
-    backendName,
+    dependencyName,
     spanName,
     kuery = '',
     environment = ENVIRONMENT_ALL.value,
+    sampleRangeFrom,
+    sampleRangeTo,
   }: {
-    backendName: string;
+    dependencyName: string;
     spanName: string;
     kuery?: string;
     environment?: string;
+    sampleRangeFrom?: number;
+    sampleRangeTo?: number;
   }) {
     return await apmApiClient.readUser({
-      endpoint: `GET /internal/apm/backends/operations/spans`,
+      endpoint: `GET /internal/apm/dependencies/operations/spans`,
       params: {
         query: {
-          backendName,
+          dependencyName,
           start: new Date(start).toISOString(),
           end: new Date(end).toISOString(),
           environment,
           kuery,
           spanName,
+          sampleRangeFrom,
+          sampleRangeTo,
         },
       },
     });
   }
 
   registry.when(
-    'Top backend spans when data is not loaded',
+    'Top dependency spans when data is not loaded',
     { config: 'basic', archives: [] },
     () => {
       it('handles empty state', async () => {
         const { body, status } = await callApi({
-          backendName: 'elasticsearch',
+          dependencyName: 'elasticsearch',
           spanName: '/_search',
         });
 
@@ -61,7 +67,7 @@ export default function ApiTest({ getService }: FtrProviderContext) {
   );
 
   registry.when(
-    'Top backend spans when data is loaded',
+    'Top dependency spans when data is loaded',
     { config: 'basic', archives: ['apm_mappings_only_8.0.0'] },
     () => {
       const javaInstance = apm.service('java', 'production', 'java').instance('instance-a');
@@ -88,6 +94,7 @@ export default function ApiTest({ getService }: FtrProviderContext) {
                     .span('/_search', 'db', 'elasticsearch')
                     .destination('elasticsearch')
                     .duration(100)
+                    .success()
                     .timestamp(timestamp)
                 ),
               goInstance
@@ -119,7 +126,7 @@ export default function ApiTest({ getService }: FtrProviderContext) {
       describe('without a kuery or environment', () => {
         it('returns the correct spans for the requested spanName', async () => {
           const response = await callApi({
-            backendName: 'elasticsearch',
+            dependencyName: 'elasticsearch',
             spanName: '/_search',
           });
 
@@ -144,6 +151,7 @@ export default function ApiTest({ getService }: FtrProviderContext) {
             spanName: '/_search',
             transactionName: 'GET /api/my-endpoint',
             transactionType: 'request',
+            outcome: 'success',
           });
 
           expect(omit(goSpans[0], 'traceId', 'transactionId')).to.eql({
@@ -154,6 +162,7 @@ export default function ApiTest({ getService }: FtrProviderContext) {
             spanName: '/_search',
             transactionName: 'GET /api/my-other-endpoint',
             transactionType: 'request',
+            outcome: 'unknown',
           });
         });
       });
@@ -161,7 +170,7 @@ export default function ApiTest({ getService }: FtrProviderContext) {
       describe('with a kuery', () => {
         it('returns the correct spans for the requested spanName', async () => {
           const response = await callApi({
-            backendName: 'elasticsearch',
+            dependencyName: 'elasticsearch',
             spanName: '/_search',
             kuery: 'service.name:go',
           });
@@ -183,7 +192,7 @@ export default function ApiTest({ getService }: FtrProviderContext) {
       describe('with an environment', () => {
         it('returns the correct spans for the requested spanName', async () => {
           const response = await callApi({
-            backendName: 'elasticsearch',
+            dependencyName: 'elasticsearch',
             spanName: '/_search',
             environment: 'development',
           });
@@ -205,7 +214,7 @@ export default function ApiTest({ getService }: FtrProviderContext) {
       describe('when requesting spans without a transaction', () => {
         it('should return the spans without transaction metadata', async () => {
           const response = await callApi({
-            backendName: 'elasticsearch',
+            dependencyName: 'elasticsearch',
             spanName: 'without transaction',
           });
 
@@ -221,11 +230,27 @@ export default function ApiTest({ getService }: FtrProviderContext) {
             duration: 200000,
             serviceName: 'java',
             spanName: 'without transaction',
+            outcome: 'unknown',
           });
 
           expect(spans[0].transactionType).not.to.be.ok();
           expect(spans[0].transactionId).not.to.be.ok();
           expect(spans[0].transactionName).not.to.be.ok();
+        });
+      });
+
+      describe('when requesting spans within a specific sample range', () => {
+        it('returns only spans whose duration falls into the requested range', async () => {
+          const response = await callApi({
+            dependencyName: 'elasticsearch',
+            spanName: '/_search',
+            sampleRangeFrom: 50000,
+            sampleRangeTo: 99999,
+          });
+
+          const { spans } = response.body;
+
+          expect(spans.every((span) => span.duration === 50000)).to.be(true);
         });
       });
 
